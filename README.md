@@ -73,6 +73,7 @@ In Chrome you can also *Install app* — the PWA is named **Kaarigar**.
 | Amit Kale | Phone: `SH-0412` + PIN `482913` | technician |
 | Priya Shinde | Phone: `SH-0233` + PIN `735104` | technician |
 | Ramesh Patil | Phone: `SH-0107` + PIN `261847` | expert |
+| Karthik Raman | Phone: `SH-0518` + PIN `590372` | technician (Tamil) |
 | Suresh Kulkarni | Web: `suresh@shreehydraulics.in` + `SEED_ADMIN_PASSWORD` | supervisor · admin |
 
 Technician/expert auth emails are hidden: `<employee_id>@<plant_code>.employees.kaarigar.app`.

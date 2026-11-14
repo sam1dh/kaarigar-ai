@@ -26,9 +26,8 @@ export default {
         "alert-tint": "#F5DCD5",
       },
       fontFamily: {
-        head: ['"Anek Latin"', "sans-serif"],
-        body: ['"IBM Plex Sans"', '"IBM Plex Sans Devanagari"', "sans-serif"],
-        deva: ['"IBM Plex Sans Devanagari"', '"IBM Plex Sans"', "sans-serif"],
+        head: "var(--font-heading)",
+        body: "var(--font-body)",
       },
       borderRadius: {
         card: "22px",

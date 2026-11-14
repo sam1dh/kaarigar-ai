@@ -1,10 +1,11 @@
 """Auth endpoints: PIN login (technicians/experts) and the current profile.
 
-Latency notes: every call here is a READ. The endpoint is fast because it makes
-as few sequential HTTPS round-trips to Supabase (Mumbai) as possible:
+Latency notes: POST /auth/pin-login and GET /auth/me are reads, kept fast by
+making as few sequential HTTPS round-trips to Supabase (Mumbai) as possible:
   - POST /auth/pin-login = 1 auth call (bcrypt, deliberately slow) + 1 combined
     profile+tenant query (PostgREST embedding).
   - GET /auth/me = 1 combined profile+tenant query.
+PATCH /auth/me is the only write here (saves the chosen language).
 """
 
 from __future__ import annotations
@@ -18,8 +19,9 @@ from supabase import AuthApiError
 from app.core.auth import CurrentUser, get_current_user, load_profile_with_tenant
 from app.core.config import get_settings
 from app.core.errors import ApiError
-from app.core.supabase import anon_client
-from app.schemas import PinLoginRequest, PinLoginResponse, ProfileOut
+from app.core.languages import is_enabled
+from app.core.supabase import admin_client, anon_client
+from app.schemas import LanguageUpdate, PinLoginRequest, PinLoginResponse, ProfileOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger("kaarigar.auth")
@@ -90,5 +92,16 @@ def pin_login(body: PinLoginRequest) -> PinLoginResponse:
 
 @router.get("/me", response_model=ProfileOut)
 def me(user: CurrentUser = Depends(get_current_user)) -> ProfileOut:
+    _, tenant = load_profile_with_tenant(user.id)
+    return _profile_out(user, tenant)
+
+
+@router.patch("/me", response_model=ProfileOut)
+def update_me(body: LanguageUpdate, user: CurrentUser = Depends(get_current_user)) -> ProfileOut:
+    # Only enabled codes from shared/languages.json are allowed.
+    if not is_enabled(body.language):
+        raise ApiError(422, "unsupported_language", "This language isn't available yet.")
+    admin_client().table("users").update({"language": body.language}).eq("id", user.id).execute()
+    user.language = body.language
     _, tenant = load_profile_with_tenant(user.id)
     return _profile_out(user, tenant)

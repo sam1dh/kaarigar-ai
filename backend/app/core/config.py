@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # App
     allowed_origins: str = "http://localhost:5173"
     app_env: str = "development"
+    languages_file: str = ""  # optional; default: <repo root>/shared/languages.json
 
     @property
     def origins(self) -> list[str]:

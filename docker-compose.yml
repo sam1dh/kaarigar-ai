@@ -1,11 +1,15 @@
 # Kaarigar AI — local development (Supabase itself runs in the cloud, Mumbai region)
 services:
   backend:
-    build: ./backend
+    build:
+      context: .            # repo root, so backend/ AND shared/ are in the build context
+      dockerfile: backend/Dockerfile
     env_file: .env
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app          # mounted for reload in dev
+      - ./backend/app:/app/app          # mounted for reload in dev
+      - ./backend/scripts:/app/scripts:ro
+      - ./shared:/app/shared:ro         # live languages.json edits without a rebuild
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped

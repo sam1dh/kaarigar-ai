@@ -43,6 +43,10 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: [".trycloudflare.com"],
+    fs: {
+      // allow importing ../shared/languages.json from outside frontend/
+      allow: [".."],
+    },
     proxy: {
       "/api": {
         target: "http://localhost:8000",

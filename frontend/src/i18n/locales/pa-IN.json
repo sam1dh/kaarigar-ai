@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "reviewed": false
+  },
+  "login": {
+    "plantFallback": "ਤੁਹਾਡਾ ਪਲਾਂਟ",
+    "wordmark": "Kaarigar",
+    "heading": "ਸ਼ਿਫਟ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸਾਈਨ ਇਨ ਕਰੋ",
+    "subline": "ਆਪਣੇ ਪਲਾਂਟ ਦੇ ਮਾਹਿਰਾਂ ਤੋਂ ਮੁਰੰਮਤ ਵਿੱਚ ਮਦਦ, ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ।",
+    "languageLabel": "ਭਾਸ਼ਾ",
+    "employeeIdLabel": "ਕਰਮਚਾਰੀ ID",
+    "employeeIdPlaceholder": "SH-0412",
+    "pinLabel": "6 ਅੰਕਾਂ ਵਾਲਾ PIN",
+    "signIn": "ਸਾਈਨ ਇਨ",
+    "signingIn": "ਸਾਈਨ ਇਨ ਹੋ ਰਿਹਾ ਹੈ…",
+    "scanBadge": "ਇਸ ਦੀ ਥਾਂ ID ਬੈਜ ਸਕੈਨ ਕਰੋ",
+    "forgotPin": "PIN ਭੁੱਲ ਗਏ? ਰੀਸੈਟ ਲਈ ਸੁਪਰਵਾਈਜ਼ਰ ਨੂੰ ਪੁੱਛੋ।",
+    "comingSoon": "ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ",
+    "invalidLogin": "ਕਰਮਚਾਰੀ ID ਜਾਂ PIN ਗਲਤ ਹੈ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "tooManyAttempts": "ਬਹੁਤ ਜ਼ਿਆਦਾ ਕੋਸ਼ਿਸ਼ਾਂ। ਸੁਪਰਵਾਈਜ਼ਰ ਤੋਂ ਮਦਦ ਲਓ।",
+    "networkError": "ਨੈੱਟਵਰਕ ਨਹੀਂ ਚੱਲ ਰਿਹਾ। ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "webHeadline": "ਮਾਹਿਰਾਂ ਦੀ ਹਰ ਮੁਰੰਮਤ, ਅਗਲੀ ਸ਼ਿਫਟ ਲਈ ਤਿਆਰ।",
+    "webSub": "ਮੁਰੰਮਤਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ, ਐਸਕੇਲੇਸ਼ਨ ਦੇ ਜਵਾਬ ਦਿਓ ਅਤੇ ਪਲਾਂਟ ਦਾ ਗਿਆਨ ਇੱਕ ਥਾਂ ਰੱਖੋ।",
+    "forWho": "ਸੁਪਰਵਾਈਜ਼ਰ ਅਤੇ ਐਡਮਿਨ ਲਈ",
+    "workEmail": "ਕੰਮ ਦਾ ਈਮੇਲ",
+    "password": "ਪਾਸਵਰਡ",
+    "forgotPassword": "ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?",
+    "technicianNote": "ਟੈਕਨੀਸ਼ੀਅਨ ਹੋ? ਫ਼ੋਨ 'ਤੇ Kaarigar ਖੋਲ੍ਹੋ ਅਤੇ ਕਰਮਚਾਰੀ ID ਤੇ PIN ਨਾਲ ਸਾਈਨ ਇਨ ਕਰੋ।",
+    "roleNote": "ਭੂਮਿਕਾ ਮੁਤਾਬਕ ਪਹੁੰਚ · ਤੁਹਾਡੇ ਪਲਾਂਟ ਦਾ ਡਾਟਾ ਤੁਹਾਡੇ ਵਰਕਸਪੇਸ ਵਿੱਚ ਹੀ ਰਹਿੰਦਾ ਹੈ",
+    "wrongEmailPw": "ਈਮੇਲ ਜਾਂ ਪਾਸਵਰਡ ਗਲਤ ਹੈ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "enterBoth": "ਈਮੇਲ ਤੇ ਪਾਸਵਰਡ ਦੋਵੇਂ ਪਾਓ।"
+  },
+  "tech": {
+    "greetingMorning": "ਸ਼ੁਭ ਸਵੇਰ, {{name}}",
+    "greetingAfternoon": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, {{name}}",
+    "greetingEvening": "ਸ਼ੁਭ ਸ਼ਾਮ, {{name}}",
+    "whichMachine": "ਤੁਸੀਂ ਕਿਸ ਮਸ਼ੀਨ 'ਤੇ ਹੋ?",
+    "scanQr": "ਮਸ਼ੀਨ ਦੇ QR ਸਟਿੱਕਰ 'ਤੇ ਕੈਮਰਾ ਫੇਰੋ",
+    "orTypeCode": "ਜਾਂ ਮਸ਼ੀਨ ਕੋਡ ਟਾਈਪ ਕਰੋ",
+    "allMachines": "ਸਾਰੀਆਂ ਮਸ਼ੀਨਾਂ",
+    "noMachines": "ਤੁਹਾਡੇ ਪਲਾਂਟ ਵਿੱਚ ਹਾਲੇ ਕੋਈ ਮਸ਼ੀਨ ਨਹੀਂ। ਸੁਪਰਵਾਈਜ਼ਰ ਨੂੰ ਦੱਸੋ।",
+    "signOut": "ਸਾਈਨ ਆਉਟ"
+  },
+  "manager": {
+    "reviewQueue": "ਰਿਵਿਊ ਕਤਾਰ",
+    "escalations": "ਐਸਕੇਲੇਸ਼ਨ",
+    "knowledgeBase": "ਨਾਲੇਜ ਬੇਸ",
+    "analytics": "ਐਨਾਲਿਟਿਕਸ",
+    "team": "ਟੀਮ",
+    "setup": "ਸੈੱਟਅੱਪ (ਸਿਰਫ਼ ਐਡਮਿਨ)",
+    "machines": "ਮਸ਼ੀਨਾਂ",
+    "documents": "ਦਸਤਾਵੇਜ਼",
+    "breakdownLogs": "ਬ੍ਰੇਕਡਾਊਨ ਲੌਗ",
+    "people": "ਲੋਕ",
+    "supervisor": "ਸੁਪਰਵਾਈਜ਼ਰ",
+    "admin": "ਐਡਮਿਨ",
+    "emptyBody": "ਹਾਲੇ ਕੁਝ ਵੀ ਨਹੀਂ। ਮਨਜ਼ੂਰ ਮੁਰੰਮਤਾਂ ਇੱਥੇ ਦਿਖਣਗੀਆਂ।",
+    "comingInPhase": "{{phase}} ਵਿੱਚ ਆ ਰਿਹਾ ਹੈ",
+    "signOut": "ਸਾਈਨ ਆਉਟ",
+    "emptyTitle": "ਇੱਥੇ ਹਾਲੇ ਕੁਝ ਨਹੀਂ"
+  },
+  "sheet": {
+    "title": "ਭਾਸ਼ਾ ਚੁਣੋ",
+    "north": "ਉੱਤਰ",
+    "west": "ਪੱਛਮ",
+    "east": "ਪੂਰਬ",
+    "south": "ਦੱਖਣ",
+    "done": "ਠੀਕ ਹੈ",
+    "more": "ਹੋਰ"
+  },
+  "textSize": {
+    "title": "ਟੈਕਸਟ ਆਕਾਰ",
+    "normal": "ਆਮ",
+    "large": "ਵੱਡਾ",
+    "extra": "ਬਹੁਤ ਵੱਡਾ"
+  }
+}

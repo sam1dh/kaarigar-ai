@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "reviewed": false
+  },
+  "login": {
+    "plantFallback": "તમારો પ્લાન્ટ",
+    "wordmark": "Kaarigar",
+    "heading": "શિફ્ટ શરૂ કરવા સાઇન ઇન કરો",
+    "subline": "તમારા પ્લાન્ટના નિષ્ણાતો પાસેથી રિપેરમાં મદદ, તમારી ભાષામાં.",
+    "languageLabel": "ભાષા",
+    "employeeIdLabel": "કર્મચારી ID",
+    "employeeIdPlaceholder": "SH-0412",
+    "pinLabel": "6 અંકનો PIN",
+    "signIn": "સાઇન ઇન",
+    "signingIn": "સાઇન ઇન થઈ રહ્યું છે…",
+    "scanBadge": "તેના બદલે ID બેજ સ્કેન કરો",
+    "forgotPin": "PIN ભૂલી ગયા? રીસેટ માટે સુપરવાઇઝરને પૂછો.",
+    "comingSoon": "જલ્દી આવી રહ્યું છે",
+    "invalidLogin": "કર્મચારી ID કે PIN ખોટું છે. ફરી પ્રયત્ન કરો.",
+    "tooManyAttempts": "ઘણા વાર પ્રયત્ન થયો. સુપરવાઇઝર પાસેથી મદદ લો.",
+    "networkError": "નેટવર્ક ચાલુ નથી. તપાસો અને ફરી પ્રયત્ન કરો.",
+    "webHeadline": "નિષ્ણાતોની દરેક રિપેર, આગલી શિફ્ટ માટે તૈયાર.",
+    "webSub": "રિપેર રિવ્યૂ કરો, એસ્કેલેશનના જવાબ આપો અને પ્લાન્ટનું જ્ઞાન એક જગ્યાએ રાખો.",
+    "forWho": "સુપરવાઇઝર અને એડમિન માટે",
+    "workEmail": "કામનો ઈમેલ",
+    "password": "પાસવર્ડ",
+    "forgotPassword": "પાસવર્ડ ભૂલી ગયા?",
+    "technicianNote": "ટેકનિશિયન છો? ફોનમાં Kaarigar ખોલો અને કર્મચારી ID તથા PINથી સાઇન ઇન કરો.",
+    "roleNote": "ભૂમિકા મુજબ પ્રવેશ · તમારા પ્લાન્ટનો ડેટા તમારા જ વર્કસ્પેસમાં રહે છે",
+    "wrongEmailPw": "ઈમેલ કે પાસવર્ડ ખોટું છે. ફરી પ્રયત્ન કરો.",
+    "enterBoth": "ઈમેલ અને પાસવર્ડ બંને પાડો."
+  },
+  "tech": {
+    "greetingMorning": "સુપ્રભાત, {{name}}",
+    "greetingAfternoon": "નમસ્તે, {{name}}",
+    "greetingEvening": "શુભ સાંજ, {{name}}",
+    "whichMachine": "તમે કયા મશીન પર છો?",
+    "scanQr": "મશીન પરના QR સ્ટિકર પર કૅમેરા ફેરવો",
+    "orTypeCode": "અથવા મશીન કોડ ટાઇપ કરો",
+    "allMachines": "બધી મશીનો",
+    "noMachines": "તમારા પ્લાન્ટમાં હજી કોઈ મશીન નથી. સુપરવાઇઝરને કહો.",
+    "signOut": "સાઇન આઉટ"
+  },
+  "manager": {
+    "reviewQueue": "રિવ્યૂ કતાર",
+    "escalations": "એસ્કેલેશન",
+    "knowledgeBase": "નોલેજ બેઝ",
+    "analytics": "એનાલિટિક્સ",
+    "team": "ટીમ",
+    "setup": "સેટઅપ (ફક્ત એડમિન)",
+    "machines": "મશીનો",
+    "documents": "દસ્તાવેજો",
+    "breakdownLogs": "બ્રેકડાઉન લોગ",
+    "people": "લોકો",
+    "supervisor": "સુપરવાઇઝર",
+    "admin": "એડમિન",
+    "emptyBody": "હજી કંઈ રાહ જોતું નથી. મંજૂર રિપેર અહીં દેખાશે.",
+    "comingInPhase": "{{phase}} માં આવી રહ્યું છે",
+    "signOut": "સાઇન આઉટ",
+    "emptyTitle": "અહીં હજી કંઈ નથી"
+  },
+  "sheet": {
+    "title": "ભાષા પસંદ કરો",
+    "north": "ઉત્તર",
+    "west": "પશ્ચિમ",
+    "east": "પૂર્વ",
+    "south": "દક્ષિણ",
+    "done": "ઠીક છે",
+    "more": "વધુ"
+  },
+  "textSize": {
+    "title": "ટેક્સ્ટ સાઇઝ",
+    "normal": "સામાન્ય",
+    "large": "મોટું",
+    "extra": "ખૂબ મોટું"
+  }
+}

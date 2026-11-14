@@ -23,7 +23,7 @@ export default function WebLogin() {
   async function signIn() {
     if (busy) return;
     if (!email.trim() || !password) {
-      setError("Enter your work email and password.");
+      setError(t("login.enterBoth"));
       return;
     }
     setBusy(true);
@@ -34,7 +34,7 @@ export default function WebLogin() {
         password,
       });
       if (authError) {
-        setError("Wrong email or password. Please try again.");
+        setError(t("login.wrongEmailPw"));
         return;
       }
       const profile = await loadProfile();
@@ -56,12 +56,11 @@ export default function WebLogin() {
         </div>
 
         <div className="max-w-xl">
-          <h1 className="font-head text-[44px] font-semibold leading-[1.1] tracking-tight">
-            Every fix your experts make, ready for the next shift.
+          <h1 className="font-head text-[2.75rem] font-semibold leading-[1.1] tracking-tight">
+            {t("login.webHeadline")}
           </h1>
           <p className="mt-4 text-lg text-white/80">
-            Review repairs, answer escalations and keep your plant's know-how in
-            one place.
+            {t("login.webSub")}
           </p>
         </div>
 
@@ -77,7 +76,7 @@ export default function WebLogin() {
             {t("login.signIn")}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
-            For supervisors and admins
+            {t("login.forWho")}
           </p>
 
           <div className="mt-8">
@@ -85,7 +84,7 @@ export default function WebLogin() {
               htmlFor="work-email"
               className="mb-2 block text-sm font-medium text-ink-muted"
             >
-              Work email
+              {t("login.workEmail")}
             </label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" />
@@ -107,13 +106,13 @@ export default function WebLogin() {
                 htmlFor="password"
                 className="text-sm font-medium text-ink-muted"
               >
-                Password
+                {t("login.password")}
               </label>
               <button
                 type="button"
                 className="text-sm font-medium text-green hover:underline"
               >
-                Forgot password?
+                {t("login.forgotPassword")}
               </button>
             </div>
             <div className="relative">
@@ -161,18 +160,15 @@ export default function WebLogin() {
 
           <div className="flex items-start gap-3 text-sm text-ink-muted">
             <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
-            <p>
-              Technician? Open Kaarigar on your phone and sign in with your
-              employee ID and PIN.
-            </p>
+            <p className="break-words">{t("login.technicianNote")}</p>
           </div>
         </div>
 
         <p className="mt-6 flex items-center gap-2 text-sm text-ink-muted">
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-tint text-[10px] font-bold text-green-deep">
+          <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-tint text-[0.625rem] font-bold text-green-deep">
             ✓
           </span>
-          Role-based access · your plant's data stays in your workspace
+          <span className="break-words">{t("login.roleNote")}</span>
         </p>
       </div>
     </div>

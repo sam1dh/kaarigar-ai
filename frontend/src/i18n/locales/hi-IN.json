@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "reviewed": false
+  },
+  "login": {
+    "plantFallback": "आपका प्लांट",
+    "wordmark": "Kaarigar",
+    "heading": "शिफ्ट शुरू करने के लिए साइन इन करें",
+    "subline": "अपने प्लांट के एक्सपर्ट्स से मरम्मत में मदद, आपकी भाषा में।",
+    "languageLabel": "भाषा",
+    "employeeIdLabel": "कर्मचारी ID",
+    "employeeIdPlaceholder": "SH-0412",
+    "pinLabel": "6 अंकों का PIN",
+    "signIn": "साइन इन",
+    "signingIn": "साइन इन हो रहा है…",
+    "scanBadge": "इसके बजाय ID बैज स्कैन करें",
+    "forgotPin": "PIN भूल गए? रीसेट के लिए सुपरवाइज़र से पूछें।",
+    "comingSoon": "जल्द आ रहा है",
+    "invalidLogin": "कर्मचारी ID या PIN गलत है। फिर कोशिश करें।",
+    "tooManyAttempts": "बहुत ज़्यादा कोशिश हो गई। सुपरवाइज़र से मदद लें।",
+    "networkError": "नेटवर्क नहीं चल रहा। जुड़ाव जाँचें और फिर कोशिश करें।",
+    "webHeadline": "एक्सपर्ट्स की हर मरम्मत, अगली शिफ्ट के लिए तैयार।",
+    "webSub": "मरम्मत रिव्यू करें, एस्कलेशन के जवाब दें और प्लांट का सारा अनुभव एक जगह रखें।",
+    "forWho": "सुपरवाइज़र और एडमिन के लिए",
+    "workEmail": "ऑफिस का ईमेल",
+    "password": "पासवर्ड",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "technicianNote": "टेक्नीशियन हैं? फ़ोन पर Kaarigar खोलें और कर्मचारी ID व PIN से साइन इन करें।",
+    "roleNote": "भूमिका के हिसाब से पहुँच · आपके प्लांट का डेटा आपके वर्कस्पेस में ही रहता है",
+    "wrongEmailPw": "ईमेल या पासवर्ड गलत है। फिर कोशिश करें।",
+    "enterBoth": "ईमेल और पासवर्ड दोनों डालें।"
+  },
+  "tech": {
+    "greetingMorning": "सुप्रभात, {{name}}",
+    "greetingAfternoon": "नमस्कार, {{name}}",
+    "greetingEvening": "शुभ संध्या, {{name}}",
+    "whichMachine": "आप किस मशीन पर हैं?",
+    "scanQr": "मशीन पर लगे QR स्टिकर पर कैमरा दिखाएँ",
+    "orTypeCode": "या मशीन कोड टाइप करें",
+    "allMachines": "सभी मशीनें",
+    "noMachines": "आपके प्लांट में अभी कोई मशीन नहीं है। सुपरवाइज़र से कहें।",
+    "signOut": "साइन आउट"
+  },
+  "manager": {
+    "reviewQueue": "रिव्यू कतार",
+    "escalations": "एस्कलेशन",
+    "knowledgeBase": "नॉलेज बेस",
+    "analytics": "एनालिटिक्स",
+    "team": "टीम",
+    "setup": "सेटअप (केवल एडमिन)",
+    "machines": "मशीनें",
+    "documents": "दस्तावेज़",
+    "breakdownLogs": "ब्रेकडाउन लॉग",
+    "people": "लोग",
+    "supervisor": "सुपरवाइज़र",
+    "admin": "एडमिन",
+    "emptyBody": "अभी कुछ इंतज़ार नहीं कर रहे। मंज़ूर मरम्मत यहाँ दिखेंगी।",
+    "comingInPhase": "{{phase}} में आ रहा है",
+    "signOut": "साइन आउट",
+    "emptyTitle": "यहाँ अभी कुछ नहीं है"
+  },
+  "sheet": {
+    "title": "भाषा चुनें",
+    "north": "उत्तर",
+    "west": "पश्चिम",
+    "east": "पूर्व",
+    "south": "दक्षिण",
+    "done": "पूर्ण",
+    "more": "और"
+  },
+  "textSize": {
+    "title": "टेक्स्ट साइज़",
+    "normal": "सामान्य",
+    "large": "बड़ा",
+    "extra": "बहुत बड़ा"
+  }
+}

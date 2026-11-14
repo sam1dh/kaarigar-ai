@@ -1,0 +1,29 @@
+{
+  "default": "en-IN",
+  "languages": [
+    { "code": "en-IN", "name": "English",   "native": "English",  "region": "all",   "script": "latn", "enabled": true,  "stt": true, "tts": true },
+    { "code": "hi-IN", "name": "Hindi",     "native": "हिन्दी",     "region": "north", "script": "deva", "enabled": true,  "stt": true, "tts": true },
+    { "code": "pa-IN", "name": "Punjabi",   "native": "ਪੰਜਾਬੀ",     "region": "north", "script": "guru", "enabled": true,  "stt": true, "tts": true },
+    { "code": "mr-IN", "name": "Marathi",   "native": "मराठी",      "region": "west",  "script": "deva", "enabled": true,  "stt": true, "tts": true },
+    { "code": "gu-IN", "name": "Gujarati",  "native": "ગુજરાતી",    "region": "west",  "script": "gujr", "enabled": true,  "stt": true, "tts": true },
+    { "code": "bn-IN", "name": "Bengali",   "native": "বাংলা",      "region": "east",  "script": "beng", "enabled": true,  "stt": true, "tts": true },
+    { "code": "od-IN", "name": "Odia",      "native": "ଓଡ଼ିଆ",       "region": "east",  "script": "orya", "enabled": true,  "stt": true, "tts": true },
+    { "code": "ta-IN", "name": "Tamil",     "native": "தமிழ்",      "region": "south", "script": "taml", "enabled": true,  "stt": true, "tts": true },
+    { "code": "te-IN", "name": "Telugu",    "native": "తెలుగు",     "region": "south", "script": "telu", "enabled": true,  "stt": true, "tts": true },
+    { "code": "kn-IN", "name": "Kannada",   "native": "ಕನ್ನಡ",      "region": "south", "script": "knda", "enabled": true,  "stt": true, "tts": true },
+    { "code": "ml-IN", "name": "Malayalam", "native": "മലയാളം",    "region": "south", "script": "mlym", "enabled": true,  "stt": true, "tts": true },
+
+    { "code": "as-IN",  "name": "Assamese", "native": "অসমীয়া",   "region": "east",  "script": "beng", "enabled": false, "stt": true, "tts": false },
+    { "code": "ur-IN",  "name": "Urdu",     "native": "اردو",      "region": "north", "script": "arab", "enabled": false, "stt": true, "tts": false },
+    { "code": "ne-IN",  "name": "Nepali",   "native": "नेपाली",     "region": "north", "script": "deva", "enabled": false, "stt": true, "tts": false },
+    { "code": "kok-IN", "name": "Konkani",  "native": "कोंकणी",     "region": "west",  "script": "deva", "enabled": false, "stt": true, "tts": false },
+    { "code": "mai-IN", "name": "Maithili", "native": "मैथिली",     "region": "east",  "script": "deva", "enabled": false, "stt": true, "tts": false },
+    { "code": "doi-IN", "name": "Dogri",    "native": "डोगरी",      "region": "north", "script": "deva", "enabled": false, "stt": true, "tts": false },
+    { "code": "brx-IN", "name": "Bodo",     "native": "बड़ो",        "region": "east",  "script": "deva", "enabled": false, "stt": true, "tts": false },
+    { "code": "sa-IN",  "name": "Sanskrit", "native": "संस्कृतम्",   "region": "all",   "script": "deva", "enabled": false, "stt": true, "tts": false },
+    { "code": "ks-IN",  "name": "Kashmiri", "native": "کٲشُر",      "region": "north", "script": "arab", "enabled": false, "stt": true, "tts": false },
+    { "code": "sd-IN",  "name": "Sindhi",   "native": "سنڌي",      "region": "west",  "script": "arab", "enabled": false, "stt": true, "tts": false },
+    { "code": "mni-IN", "name": "Manipuri", "native": "মৈতৈলোন্",   "region": "east",  "script": "beng", "enabled": false, "stt": true, "tts": false },
+    { "code": "sat-IN", "name": "Santali",  "native": "ᱥᱟᱱᱛᱟᱲᱤ",   "region": "east",  "script": "olck", "enabled": false, "stt": true, "tts": false }
+  ]
+}

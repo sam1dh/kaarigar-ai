@@ -1,71 +1,77 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import en from "./locales/en.json";
-import hi from "./locales/hi.json";
-import mr from "./locales/mr.json";
+import resourcesToBackend from "i18next-resources-to-backend";
+import {
+  DEFAULT_LANG,
+  browserToEnabledCode,
+  isLanguageEnabled,
+  scriptFor,
+} from "./languages";
+import { loadScriptFonts } from "./fonts";
 
-export const LANGS = [
-  { code: "en", label: "English" },
-  { code: "hi", label: "हिन्दी" },
-  { code: "mr", label: "मराठी" },
-] as const;
+const LANG_STORAGE_KEY = "kaarigar.lang";
+const TEXT_SIZE_STORAGE_KEY = "kaarigar.textSize";
 
-export type LangCode = (typeof LANGS)[number]["code"];
+export type TextSizeValue = "normal" | "large" | "xlarge";
 
-const STORAGE_KEY = "kaarigar.lang";
-
-/** Map a users.language value (e.g. "hi-IN", "mr-IN") to an i18n code. */
-export function profileLangToCode(language: string | undefined): LangCode {
-  if (!language) return "en";
-  if (language.startsWith("hi")) return "hi";
-  if (language.startsWith("mr")) return "mr";
-  return "en";
+/** Which language: after login → profile; before login → localStorage, else an enabled browser language, else en-IN. */
+export function initialLanguage(profileLanguage?: string): string {
+  if (profileLanguage && isLanguageEnabled(profileLanguage)) return profileLanguage;
+  const stored = localStorage.getItem(LANG_STORAGE_KEY);
+  if (stored && isLanguageEnabled(stored)) return stored;
+  for (const tag of navigator.languages ?? []) {
+    const code = browserToEnabledCode(tag);
+    if (code) return code;
+  }
+  return DEFAULT_LANG;
 }
 
-/** Convert an i18n code back to a users.language-style tag. */
-export function codeToProfileLang(code: LangCode): string {
-  return code === "hi" ? "hi-IN" : code === "mr" ? "mr-IN" : "en-IN";
+export function storedTextSize(): "normal" | "large" | "xlarge" {
+  const v = localStorage.getItem(TEXT_SIZE_STORAGE_KEY);
+  return v === "large" || v === "xlarge" ? v : "normal";
 }
 
-/** Before login: the pill choice, persisted in localStorage (default English). */
-export function getStoredLang(): LangCode {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "hi" || stored === "mr" || stored === "en") return stored;
-  return "en";
+export function applyTextSize(size: "normal" | "large" | "xlarge"): void {
+  document.documentElement.dataset.textSize = size;
+  localStorage.setItem(TEXT_SIZE_STORAGE_KEY, size);
 }
 
-export function storeLang(code: LangCode): void {
-  localStorage.setItem(STORAGE_KEY, code);
+/** Load fonts → set <html lang data-script> → switch i18n. */
+export async function applyLanguage(code: string): Promise<void> {
+  await loadScriptFonts(scriptFor(code));
+  const lang = languageShortCode(code);
+  document.documentElement.lang = lang;
+  document.documentElement.dataset.script = scriptFor(code);
+  await i18n.changeLanguage(code);
 }
 
-export function applyLanguage(code: LangCode): void {
-  void i18n.changeLanguage(code);
-  document.documentElement.lang = code;
-  // Devanagari font stack when showing Hindi/Marathi.
-  document.body.classList.toggle("font-deva", code !== "en");
+function languageShortCode(code: string): string {
+  // "ta-IN" → "ta" for <html lang>
+  return code.split("-")[0] ?? code;
 }
 
-/** After login: default language follows the profile. */
-export function setAppLanguage(profileLanguage: string | undefined): void {
-  applyLanguage(profileLangToCode(profileLanguage));
+/** User picked a language on the login screen (or in a menu while logged out). */
+export async function chooseLanguage(code: string): Promise<void> {
+  localStorage.setItem(LANG_STORAGE_KEY, code);
+  await applyLanguage(code);
 }
 
-/** User picked a language pill on the login screen. */
-export function chooseLanguage(code: LangCode): void {
-  storeLang(code);
-  applyLanguage(code);
-}
+void i18n
+  .use(initReactI18next)
+  .use(
+    resourcesToBackend((language: string) => import(`./locales/${language}.json`))
+  )
+  .init({
+    lng: initialLanguage(),
+    fallbackLng: "en-IN",
+    interpolation: { escapeValue: false },
+  });
 
-void i18n.use(initReactI18next).init({
-  resources: {
-    en: { translation: en },
-    hi: { translation: hi },
-    mr: { translation: mr },
-  },
-  lng: getStoredLang(),
-  fallbackLng: "en",
-  interpolation: { escapeValue: false },
-});
-applyLanguage(getStoredLang());
+// Apply the stored text size before first paint of screens that read it.
+document.documentElement.dataset.textSize = storedTextSize();
+
+// On boot: load the initial language's fonts and set <html lang data-script>
+// (the login screen has no session, so loadProfile won't do it).
+void applyLanguage(initialLanguage());
 
 export default i18n;

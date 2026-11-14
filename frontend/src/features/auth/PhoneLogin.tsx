@@ -10,15 +10,22 @@ import { IdCard, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import LanguageSheet from "@/components/LanguageSheet";
 import { ApiError, api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
-import { chooseLanguage, LANGS, type LangCode } from "@/i18n";
-import i18nInstance from "@/i18n";
+import { chooseLanguage } from "@/i18n";
+import { languageByCode } from "@/i18n/languages";
 import { useSessionStore } from "@/stores/session";
 import { cn } from "@/lib/utils";
 import type { PinLoginResponse } from "./types";
 
 const PIN_LENGTH = 6;
+
+/** Quick pills per section 7.5: English · हिन्दी · <last chosen if different> · 🌐 More. */
+const QUICK_LANGS = [
+  { code: "en-IN", label: "English" },
+  { code: "hi-IN", label: "हिन्दी" },
+];
 
 /** Plant chip from VITE_PLANT_CODE — real plant name shows after login. */
 function plantLabel(): string {
@@ -29,13 +36,12 @@ function plantLabel(): string {
 }
 
 export default function PhoneLogin() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const loadProfile = useSessionStore((s) => s.loadProfile);
 
-  const [lang, setLang] = useState<LangCode>(
-    () => i18nInstance.language as LangCode,
-  );
+  const [lang, setLang] = useState<string>(() => i18n.language);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [employeeId, setEmployeeId] = useState("");
   const [pin, setPin] = useState<string[]>(Array(PIN_LENGTH).fill(""));
   const [busy, setBusy] = useState(false);
@@ -43,6 +49,11 @@ export default function PhoneLogin() {
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const pinValue = useMemo(() => pin.join(""), [pin]);
+
+  /** Shown only when the user's last chosen language isn't already on a pill. */
+  const thirdPill = QUICK_LANGS.some((p) => p.code === lang)
+    ? null
+    : { code: lang, label: languageByCode(lang)?.native ?? lang };
 
   function setPinAt(index: number, value: string) {
     const digits = value.replace(/\D/g, "");
@@ -78,8 +89,9 @@ export default function PhoneLogin() {
     }
   }
 
-  async function pickLanguage(code: LangCode) {
+  async function pickLanguage(code: string) {
     setLang(code);
+    setSheetOpen(false);
     chooseLanguage(code); // switches i18n and is remembered in localStorage
   }
 
@@ -139,32 +151,54 @@ export default function PhoneLogin() {
       </div>
 
       {/* Heading */}
-      <h1 className="font-head text-[40px] font-semibold leading-[1.1] tracking-tight text-ink">
+      <h1 className="font-head text-[2.5rem] font-semibold leading-[1.1] tracking-tight text-ink">
         {t("login.heading")}
       </h1>
-      <p className="mt-3 text-[15px] text-ink-muted">{t("login.subline")}</p>
+      <p className="mt-3 text-[0.9375rem] text-ink-muted">{t("login.subline")}</p>
 
-      {/* Language pills */}
+      {/* Language pills: English · हिन्दी · <last chosen if different> · 🌐 More */}
       <div className="mt-8">
         <p className="mb-3 text-sm font-medium text-ink-muted">
           {t("login.languageLabel")}
         </p>
-        <div className="flex gap-2">
-          {LANGS.map((l) => (
+        <div className="flex flex-wrap gap-2">
+          {/* English · हिन्दी · <last chosen if different> */}
+          {QUICK_LANGS.map((p) => (
             <button
-              key={l.code}
+              key={p.code}
               type="button"
-              onClick={() => void pickLanguage(l.code)}
+              onClick={() => void pickLanguage(p.code)}
               className={cn(
                 "rounded-full px-4 py-2.5 text-sm font-semibold transition-colors",
-                lang === l.code
+                lang === p.code
                   ? "bg-green-deep text-white"
                   : "border border-line bg-white text-ink hover:bg-surface",
               )}
             >
-              {l.label}
+              {p.label}
             </button>
           ))}
+          {thirdPill && (
+            <button
+              type="button"
+              onClick={() => void pickLanguage(thirdPill.code)}
+              className="break-words rounded-full bg-green-deep px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+            >
+              {thirdPill.label}
+            </button>
+          )}
+          {/* 🌐 More */}
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-label={t("sheet.title")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-surface",
+              thirdPill && "break-words",
+            )}
+          >
+            🌐 {t("sheet.more")}
+          </button>
         </div>
       </div>
 
@@ -241,6 +275,13 @@ export default function PhoneLogin() {
       <p className="mt-6 text-center text-sm text-ink-muted">
         {t("login.forgotPin")}
       </p>
+
+      <LanguageSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        current={lang}
+        onPick={pickLanguage}
+      />
     </div>
   );
 }

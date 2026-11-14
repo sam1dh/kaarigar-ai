@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -7,14 +7,18 @@ import {
   ChevronDown,
   ClipboardList,
   FileText,
+  Globe,
   Inbox,
   LogOut,
   Table2,
   TriangleAlert,
+  Type,
   Users,
 } from "lucide-react";
 import { initials } from "@/features/auth/types";
 import { useSessionStore } from "@/stores/session";
+import LanguageSheet from "@/components/LanguageSheet";
+import TextSizeControl from "@/components/TextSizeControl";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -29,7 +33,11 @@ export default function ManagerLayout() {
   const { t } = useTranslation();
   const profile = useSessionStore((s) => s.profile);
   const signOut = useSessionStore((s) => s.signOut);
+  const setLanguage = useSessionStore((s) => s.setLanguage);
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
 
   const mainNav: NavItem[] = useMemo(
     () => [
@@ -128,15 +136,15 @@ export default function ManagerLayout() {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+                  "flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
                   isActive
                     ? "border border-line bg-white text-ink shadow-sm"
                     : "text-ink-muted hover:bg-white/60 hover:text-ink",
                 )
               }
             >
-              {item.icon}
-              {t(item.labelKey)}
+              <span className="mt-0.5 shrink-0">{item.icon}</span>
+              <span className="break-words">{t(item.labelKey)}</span>
             </NavLink>
           ))}
         </nav>
@@ -159,43 +167,76 @@ export default function ManagerLayout() {
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+                      "flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
                       isActive
                         ? "border border-line bg-white text-ink shadow-sm"
                         : "text-ink-muted hover:bg-white/60 hover:text-ink",
                     )
                   }
                 >
-                  {item.icon}
-                  {t(item.labelKey)}
+                  <span className="mt-0.5 shrink-0">{item.icon}</span>
+                  <span className="break-words">{t(item.labelKey)}</span>
                 </NavLink>
               ))}
             </nav>
           </>
         )}
 
-        {/* User card */}
-        <div className="mt-auto flex items-center gap-3 rounded-xl px-2 py-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-green-tint text-xs font-bold text-green-deep">
-            {initials(profile?.name ?? "")}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-ink">
-              {profile?.name}
-            </p>
-            <p className="text-xs text-ink-muted">
-              {t("manager.supervisor")}
-              {profile?.is_admin ? ` · ${t("manager.admin")}` : ""}
-            </p>
-          </div>
+        {/* User card with menu: Language, Text size, Sign out */}
+        <div className="relative mt-auto">
           <button
             type="button"
-            aria-label={t("manager.signOut")}
-            onClick={() => void signOut()}
-            className="text-ink-faint hover:text-ink"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-white/60"
           >
-            <LogOut className="h-4 w-4" />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-tint text-xs font-bold text-green-deep">
+              {initials(profile?.name ?? "")}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-ink">
+                {profile?.name}
+              </span>
+              <span className="block text-xs text-ink-muted">
+                {t("manager.supervisor")}
+                {profile?.is_admin ? ` · ${t("manager.admin")}` : ""}
+              </span>
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-ink-faint" />
           </button>
+          {menuOpen && (
+            <div className="absolute bottom-14 left-0 z-20 w-52 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setLangOpen(true);
+                }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-ink hover:bg-surface"
+              >
+                <Globe className="h-4 w-4" />
+                {t("sheet.title")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSizeOpen(true);
+                }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-ink hover:bg-surface"
+              >
+                <Type className="h-4 w-4" />
+                {t("textSize.title")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-ink hover:bg-surface"
+              >
+                <LogOut className="h-4 w-4" />
+                {t("manager.signOut")}
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -203,6 +244,17 @@ export default function ManagerLayout() {
       <main className="flex-1 px-10 py-8 xl:px-14">
         <Outlet />
       </main>
+
+      <LanguageSheet
+        open={langOpen}
+        onClose={() => setLangOpen(false)}
+        current={profile?.language ?? "en-IN"}
+        onPick={async (code) => {
+          await setLanguage(code);
+          setLangOpen(false);
+        }}
+      />
+      <TextSizeControl open={sizeOpen} onClose={() => setSizeOpen(false)} />
     </div>
   );
 }

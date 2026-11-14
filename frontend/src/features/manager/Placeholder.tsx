@@ -13,7 +13,7 @@ export default function Placeholder({
 
   return (
     <div className="max-w-3xl">
-      <h1 className="font-head text-[32px] font-semibold tracking-tight text-ink">
+      <h1 className="font-head text-[2rem] font-semibold tracking-tight text-ink">
         {title ?? ""}
       </h1>
       <div className="mt-10 flex flex-col items-center justify-center rounded-card border border-line bg-white px-10 py-16 text-center">

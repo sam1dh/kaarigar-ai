@@ -7,6 +7,7 @@
 @layer base {
   html {
     @apply font-body text-ink antialiased;
+    line-height: var(--line-height-body, 1.5);
   }
   body {
     @apply bg-enamel min-h-screen;

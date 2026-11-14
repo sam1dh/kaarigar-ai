@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, LogOut, Search } from "lucide-react";
+import { ChevronRight, Globe, LogOut, Search, Type } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import LanguageSheet from "@/components/LanguageSheet";
+import TextSizeControl from "@/components/TextSizeControl";
 import { api } from "@/lib/api";
 import { initials } from "@/features/auth/types";
 import type { Machine } from "@/features/auth/types";
@@ -14,7 +16,10 @@ export default function TechHome() {
   const { t } = useTranslation();
   const profile = useSessionStore((s) => s.profile);
   const signOut = useSessionStore((s) => s.signOut);
+  const setLanguage = useSessionStore((s) => s.setLanguage);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
   const [codeFilter, setCodeFilter] = useState("");
 
   const { data: machines, isLoading } = useQuery({
@@ -34,7 +39,7 @@ export default function TechHome() {
       return t("tech.greetingEvening", { name: firstName(profile?.name) });
     if (hour >= 12)
       return t("tech.greetingAfternoon", { name: firstName(profile?.name) });
-    return t("tech.greeting", { name: firstName(profile?.name) });
+    return t("tech.greetingMorning", { name: firstName(profile?.name) });
   }
 
   function firstName(name: string | undefined) {
@@ -61,7 +66,29 @@ export default function TechHome() {
             {initials(profile?.name ?? "")}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-12 z-20 w-44 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+            <div className="absolute right-0 top-12 z-20 w-52 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setLangOpen(true);
+                }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-ink hover:bg-surface"
+              >
+                <Globe className="h-4 w-4" />
+                {t("sheet.title")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSizeOpen(true);
+                }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm font-medium text-ink hover:bg-surface"
+              >
+                <Type className="h-4 w-4" />
+                {t("textSize.title")}
+              </button>
               <button
                 type="button"
                 onClick={() => void signOut()}
@@ -76,8 +103,8 @@ export default function TechHome() {
       </header>
 
       {/* Greeting + heading */}
-      <p className="mt-8 text-[15px] text-ink-muted">{greeting()}</p>
-      <h1 className="mt-1 font-head text-[34px] font-semibold leading-[1.15] tracking-tight text-ink">
+      <p className="mt-8 text-[0.9375rem] text-ink-muted">{greeting()}</p>
+      <h1 className="mt-1 font-head text-[2.125rem] font-semibold leading-[1.15] tracking-tight text-ink">
         {t("tech.whichMachine")}
       </h1>
 
@@ -106,7 +133,7 @@ export default function TechHome() {
             ))}
           </div>
         </div>
-        <p className="text-center text-[15px] text-white/85">
+        <p className="text-center text-[0.9375rem] text-white/85">
           {t("tech.scanQr")}
         </p>
       </div>
@@ -125,7 +152,7 @@ export default function TechHome() {
 
       {/* Machine list */}
       <p className="mb-3 mt-8 text-sm font-medium text-ink-muted">
-        {t("tech.recentMachines")}
+        {t("tech.allMachines")}
       </p>
       {isLoading ? (
         <div className="rounded-card border border-line bg-white p-5 text-sm text-ink-muted">
@@ -162,6 +189,17 @@ export default function TechHome() {
           ))}
         </div>
       )}
+
+      <LanguageSheet
+        open={langOpen}
+        onClose={() => setLangOpen(false)}
+        current={profile?.language ?? "en-IN"}
+        onPick={async (code) => {
+          await setLanguage(code);
+          setLangOpen(false);
+        }}
+      />
+      <TextSizeControl open={sizeOpen} onClose={() => setSizeOpen(false)} />
     </div>
   );
 }

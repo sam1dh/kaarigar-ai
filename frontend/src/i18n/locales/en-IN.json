@@ -1,4 +1,7 @@
 {
+  "_meta": {
+    "reviewed": true
+  },
   "login": {
     "plantFallback": "Your plant",
     "wordmark": "Kaarigar",
@@ -14,16 +17,27 @@
     "forgotPin": "Forgot your PIN? Ask your supervisor to reset it.",
     "comingSoon": "Coming soon",
     "invalidLogin": "Wrong employee ID or PIN. Please try again.",
-    "tooManyAttempts": "Too many tries. Ask your supervisor to help."
+    "tooManyAttempts": "Too many tries. Ask your supervisor to help.",
+    "networkError": "You're offline. Check your connection and try again.",
+    "webHeadline": "Every fix your experts make, ready for the next shift.",
+    "webSub": "Review repairs, answer escalations and keep your plant's know-how in one place.",
+    "forWho": "For supervisors and admins",
+    "workEmail": "Work email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "technicianNote": "Technician? Open Kaarigar on your phone and sign in with your employee ID and PIN.",
+    "roleNote": "Role-based access · your plant's data stays in your workspace",
+    "wrongEmailPw": "Wrong email or password. Please try again.",
+    "enterBoth": "Enter your work email and password."
   },
   "tech": {
-    "greeting": "Good morning, {{name}}",
-    "greetingEvening": "Good evening, {{name}}",
+    "greetingMorning": "Good morning, {{name}}",
     "greetingAfternoon": "Good afternoon, {{name}}",
+    "greetingEvening": "Good evening, {{name}}",
     "whichMachine": "Which machine are you at?",
     "scanQr": "Point the camera at the QR sticker on the machine",
     "orTypeCode": "Or type a machine code",
-    "recentMachines": "All machines",
+    "allMachines": "All machines",
     "noMachines": "No machines in your plant yet. Ask your supervisor to set them up.",
     "signOut": "Sign out"
   },
@@ -40,9 +54,24 @@
     "people": "People",
     "supervisor": "Supervisor",
     "admin": "Admin",
-    "emptyTitle": "Review queue",
     "emptyBody": "Nothing waiting yet. Approved repairs will show up here.",
     "comingInPhase": "Coming in {{phase}}",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "emptyTitle": "Nothing here yet"
+  },
+  "sheet": {
+    "title": "Choose language",
+    "north": "North",
+    "west": "West",
+    "east": "East",
+    "south": "South",
+    "done": "Done",
+    "more": "More"
+  },
+  "textSize": {
+    "title": "Text size",
+    "normal": "Normal",
+    "large": "Large",
+    "extra": "Extra large"
   }
 }

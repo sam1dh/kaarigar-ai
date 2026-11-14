@@ -37,6 +37,7 @@ USERS = [
     ("Amit Kale", "SH-0412", "technician", False, "hi-IN", "482913"),
     ("Priya Shinde", "SH-0233", "technician", False, "mr-IN", "735104"),
     ("Ramesh Patil", "SH-0107", "expert", False, "mr-IN", "261847"),
+    ("Karthik Raman", "SH-0518", "technician", False, "ta-IN", "590372"),
 ]
 
 

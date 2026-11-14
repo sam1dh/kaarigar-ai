@@ -2,6 +2,11 @@
   Kaarigar AI design tokens (section 8 of the Phase 0 plan).
   Rules: yellow only for safety, red only for recording/escalation/errors.
   Phone buttons are 60px tall. No bottom nav on the phone.
+
+  Fonts (section 7.5): --font-heading / --font-body are set per
+  [data-script] on <html>, always with the Latin font first so machine
+  codes like "HP-07" and English words look identical in every language.
+  Family names match the installed @fontsource(-variable) packages.
 */
 :root {
   --bg-enamel: #e9ede8; /* app background */
@@ -25,4 +30,60 @@
   --radius-card: 22px;
   --radius-button: 18px;
   --radius-input: 16px;
+
+  /* Latin (default) — the only fonts downloaded at app start */
+  --font-heading: "Anek Latin Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", system-ui, sans-serif;
+  --line-height-body: 1.5;
 }
+
+[data-script="deva"] {
+  --font-heading: "Anek Latin Variable", "Anek Devanagari Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "IBM Plex Sans Devanagari", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="guru"] {
+  --font-heading: "Anek Latin Variable", "Anek Gurmukhi Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Gurmukhi Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="gujr"] {
+  --font-heading: "Anek Latin Variable", "Anek Gujarati Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Gujarati Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="beng"] {
+  --font-heading: "Anek Latin Variable", "Anek Bangla Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Bengali Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="orya"] {
+  --font-heading: "Anek Latin Variable", "Anek Odia Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Oriya Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="taml"] {
+  --font-heading: "Anek Latin Variable", "Anek Tamil Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Tamil Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="telu"] {
+  --font-heading: "Anek Latin Variable", "Anek Telugu Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Telugu Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="knda"] {
+  --font-heading: "Anek Latin Variable", "Anek Kannada Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Kannada Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+[data-script="mlym"] {
+  --font-heading: "Anek Latin Variable", "Anek Malayalam Variable", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "Noto Sans Malayalam Variable", system-ui, sans-serif;
+  --line-height-body: 1.6;
+}
+
+/* Text size (TextSizeControl): root font-size scales every rem-based size. */
+html[data-text-size="normal"] { font-size: 100%; }
+html[data-text-size="large"] { font-size: 115%; }
+html[data-text-size="xlarge"] { font-size: 130%; }

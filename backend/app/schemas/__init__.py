@@ -26,6 +26,10 @@ class PinLoginResponse(BaseModel):
     profile: ProfileOut
 
 
+class LanguageUpdate(BaseModel):
+    language: str = Field(min_length=2, max_length=12)
+
+
 class MachineOut(BaseModel):
     id: str
     code: str
