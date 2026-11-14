@@ -1,0 +1,9 @@
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const sb = createClient('https://pulnzrlibvvgzrmbpkbk.supabase.co', 'sb_publishable_ZIY1qB_cUz67QrvvP_OvWQ_3bbkRn0d');
+  const q = new URLSearchParams(location.search);
+  try {
+    const { error } = await sb.auth.setSession({ access_token: q.get('at'), refresh_token: q.get('rt') });
+    document.title = error ? 'ERR ' + error.message : 'OK';
+  } catch (e) { document.title = 'ERR ' + e; }
+</script>

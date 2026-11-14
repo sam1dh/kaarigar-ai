@@ -1,4 +1,11 @@
-"""Auth endpoints: PIN login (technicians/experts) and the current profile."""
+"""Auth endpoints: PIN login (technicians/experts) and the current profile.
+
+Latency notes: every call here is a READ. The endpoint is fast because it makes
+as few sequential HTTPS round-trips to Supabase (Mumbai) as possible:
+  - POST /auth/pin-login = 1 auth call (bcrypt, deliberately slow) + 1 combined
+    profile+tenant query (PostgREST embedding).
+  - GET /auth/me = 1 combined profile+tenant query.
+"""
 
 from __future__ import annotations
 
@@ -8,10 +15,10 @@ import time
 from fastapi import APIRouter, Depends
 from supabase import AuthApiError
 
-from app.core.auth import CurrentUser, get_current_user, load_profile
+from app.core.auth import CurrentUser, get_current_user, load_profile_with_tenant
 from app.core.config import get_settings
 from app.core.errors import ApiError
-from app.core.supabase import admin_client, anon_client
+from app.core.supabase import anon_client
 from app.schemas import PinLoginRequest, PinLoginResponse, ProfileOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -46,40 +53,13 @@ def _profile_out(user: CurrentUser, tenant: dict) -> ProfileOut:
     )
 
 
-def _load_tenant(tenant_id: str) -> dict:
-    row = (
-        admin_client()
-        .table("tenants")
-        .select("id, name, slug")
-        .eq("id", tenant_id)
-        .limit(1)
-        .execute()
-    )
-    tenants = row.data or []
-    if not tenants:
-        raise ApiError(403, "profile_missing", "No plant found for this account.")
-    return tenants[0]
-
-
 @router.post("/pin-login", response_model=PinLoginResponse)
 def pin_login(body: PinLoginRequest) -> PinLoginResponse:
     settings = get_settings()
     plant_slug = body.plant_code.strip().lower()
 
-    plant = (
-        admin_client()
-        .table("tenants")
-        .select("id, name, slug")
-        .eq("slug", plant_slug)
-        .limit(1)
-        .execute()
-    )
-    tenants = plant.data or []
-    if not tenants:
-        # Same message as a wrong PIN — never reveal which part failed.
-        raise ApiError(401, "invalid_login", "Wrong employee ID or PIN. Please try again.")
-    tenant = tenants[0]
-
+    # The hidden email embeds the plant slug, so a wrong plant code simply fails
+    # auth below — no separate tenant lookup needed (saves one round-trip).
     email = settings.employee_email(body.employee_id.strip(), plant_slug)
     rl_key = email.lower()
 
@@ -99,7 +79,7 @@ def pin_login(body: PinLoginRequest) -> PinLoginResponse:
         raise ApiError(401, "invalid_login", "Wrong employee ID or PIN. Please try again.")
 
     # The token was just issued by Supabase, so loading the profile by user id is safe.
-    user = load_profile(session.user.id)
+    user, tenant = load_profile_with_tenant(session.user.id)
     return PinLoginResponse(
         access_token=session.access_token,
         refresh_token=session.refresh_token or "",
@@ -110,4 +90,5 @@ def pin_login(body: PinLoginRequest) -> PinLoginResponse:
 
 @router.get("/me", response_model=ProfileOut)
 def me(user: CurrentUser = Depends(get_current_user)) -> ProfileOut:
-    return _profile_out(user, _load_tenant(user.tenant_id))
+    _, tenant = load_profile_with_tenant(user.id)
+    return _profile_out(user, tenant)

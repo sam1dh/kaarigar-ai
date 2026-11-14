@@ -96,6 +96,38 @@ def load_profile(user_id: str) -> CurrentUser:
     )
 
 
+def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
+    """Profile + tenant in a single REST call (PostgREST embeds tenants via the FK)."""
+    row = (
+        admin_client()
+        .table("users")
+        .select(
+            "id, tenant_id, name, employee_id, role, is_admin, language, tenant:tenants(id, name, slug)"
+        )
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+    )
+    data = row.data or []
+    if not data:
+        raise ApiError(403, "profile_missing", "No user profile for this account.")
+    d = data[0]
+    tenant_raw = d.get("tenant") or {}
+    if not tenant_raw:
+        raise ApiError(403, "profile_missing", "No plant found for this account.")
+    user = CurrentUser(
+        id=str(d["id"]),
+        tenant_id=str(d["tenant_id"]),
+        name=d["name"],
+        employee_id=d.get("employee_id"),
+        role=d["role"],
+        is_admin=bool(d["is_admin"]),
+        language=d["language"],
+    )
+    tenant = {"id": str(tenant_raw["id"]), "name": tenant_raw["name"], "slug": tenant_raw["slug"]}
+    return user, tenant
+
+
 def get_current_user(request: Request) -> CurrentUser:
     """Read Authorization: Bearer <token>, verify it, load the profile."""
     auth_header = request.headers.get("Authorization", "")
