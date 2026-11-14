@@ -14,6 +14,12 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg"],
+      // Serve the manifest + service worker in dev too, so the install
+      // button works while testing on localhost / the Cloudflare tunnel.
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
       manifest: {
         name: "Kaarigar",
         short_name: "Kaarigar",
