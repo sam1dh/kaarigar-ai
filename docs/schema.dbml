@@ -1,0 +1,345 @@
+// Kaarigar AI — database schema (Phase 0, migration 0001_init.sql)
+// Paste into https://dbdiagram.io to view.
+// Source of truth is supabase/migrations/*.sql. Update this file whenever a migration changes.
+// Status/type columns are text + CHECK in SQL; allowed values are listed in each note.
+
+Project kaarigar_ai {
+  database_type: 'PostgreSQL'
+  Note: '''
+  Multi-tenant: every table except tenants has tenant_id.
+  RLS: everyone can read rows where tenant_id = current_tenant_id().
+  Writes go through the FastAPI backend using the service-role key.
+  Extensions: vector (pgvector), pg_trgm, pgcrypto.
+  Storage buckets (private): audio, tts, documents, imports.
+  '''
+}
+
+// ===================== Supabase auth (managed by Supabase) =====================
+
+Table auth.users {
+  id uuid [pk]
+  email text [note: 'Technicians: hidden email like sh-0412@shree.employees.kaarigar.app']
+  Note: 'Created by Supabase Auth. Do not edit directly.'
+}
+
+// ===================== Setup =====================
+
+Table tenants {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name text [not null, note: 'Shree Hydraulics']
+  slug text [not null, unique, note: 'Plant code used at login, e.g. shree']
+  city text
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'One row per customer plant'
+}
+
+Table users {
+  id uuid [pk, note: 'Same id as auth.users (on delete cascade)']
+  tenant_id uuid [not null]
+  name text [not null]
+  employee_id text [note: 'SH-0412; null for email-login managers']
+  role text [not null, note: 'technician | expert | supervisor']
+  is_admin boolean [not null, default: false, note: 'Shows the Setup tab in Manager web']
+  language text [not null, default: 'hi-IN', note: 'hi-IN | mr-IN | en-IN ...']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tenant_id, employee_id) [unique]
+  }
+}
+
+Table machine_models {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  oem text
+  model text [not null, note: 'HPX-200']
+  type text [note: 'hydraulic press, cnc lathe, air compressor ...']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table machines {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  model_id uuid
+  code text [not null, note: 'HP-07']
+  name text [note: 'Hydraulic press']
+  line text [note: 'Line 2']
+  qr_token text [not null, unique, default: `encode(gen_random_bytes(12), 'hex')`, note: 'Printed on the machine QR sticker']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tenant_id, code) [unique]
+  }
+}
+
+Table glossary {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  term text [not null, note: 'thak-thak']
+  meaning text [note: 'knocking sound']
+  keep_in_english boolean [not null, default: false]
+
+  indexes {
+    (tenant_id, term) [unique]
+  }
+}
+
+// ===================== Sources =====================
+
+Table documents {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  model_id uuid
+  title text [not null]
+  type text [not null, note: 'manual | sop | safety']
+  file_path text [not null, note: 'Path in the documents bucket']
+  status text [not null, default: 'uploaded', note: 'uploaded | parsing | ready | failed']
+  pages int
+  quality_notes text
+  created_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'OEM manuals / SOPs uploaded by admin'
+}
+
+Table log_imports {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  file_path text [not null, note: 'Path in the imports bucket']
+  column_mapping jsonb [note: 'LLM-suggested Excel column -> field mapping']
+  status text [not null, default: 'uploaded', note: 'uploaded | mapping | importing | done | failed']
+  rows_ok int [not null, default: 0]
+  rows_skipped int [not null, default: 0]
+  created_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'One row per breakdown-log Excel upload'
+}
+
+Table maintenance_logs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  machine_id uuid
+  import_id uuid
+  date date
+  fault text
+  action text
+  downtime_min int
+  technician text
+  raw jsonb [note: 'Original Excel row']
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Machine history (H sources)'
+}
+
+// ===================== Knowledge =====================
+
+Table symptoms {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  name text [not null]
+  aliases text[] [not null, default: `'{}'`]
+  indexes {
+    (tenant_id, name) [unique]
+  }
+}
+
+Table causes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  name text [not null]
+  aliases text[] [not null, default: `'{}'`]
+  indexes {
+    (tenant_id, name) [unique]
+  }
+}
+
+Table fixes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  name text [not null]
+  aliases text[] [not null, default: `'{}'`]
+  indexes {
+    (tenant_id, name) [unique]
+  }
+}
+
+Table repair_records {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  machine_id uuid [not null]
+  author_id uuid [not null, note: 'Expert who recorded it']
+  audio_path text [note: 'Path in the audio bucket']
+  transcript_en text
+  symptom_id uuid
+  cause_id uuid
+  fix_id uuid
+  safety_note text
+  fields jsonb [note: 'All extracted fields from the LLM']
+  ai_check jsonb [note: 'AI quality check result']
+  status text [not null, default: 'draft', note: 'draft | expert_review | pending | approved | rejected']
+  reject_reason text
+  reviewed_by uuid
+  reviewed_at timestamptz
+  source text [not null, default: 'capture', note: 'capture | escalation | seed']
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Expert knowledge (E sources). Only approved rows go into chunks.'
+}
+
+// ===================== Search =====================
+
+Table chunks {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  source_type text [not null, note: 'manual | record | log']
+  source_id uuid [not null, note: 'documents.id / repair_records.id / maintenance_logs.id (no FK: polymorphic)']
+  machine_id uuid
+  model_id uuid
+  section text
+  text text [not null]
+  embedding vector(384) [note: 'bge-small-en-v1.5']
+  tsv tsvector [note: 'GENERATED ALWAYS AS to_tsvector(english, text) STORED']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    embedding [name: 'chunks_embedding_idx', type: hnsw, note: 'vector_cosine_ops']
+    tsv [name: 'chunks_tsv_idx', type: gin]
+    text [name: 'chunks_trgm_idx', type: gin, note: 'gin_trgm_ops']
+    (tenant_id, machine_id, model_id) [name: 'chunks_scope_idx']
+  }
+  Note: 'One search table for manuals, records and logs (hybrid search)'
+}
+
+// ===================== Activity =====================
+
+Table queries {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  user_id uuid [not null]
+  machine_id uuid
+  question_original text
+  question_en text
+  language text
+  answer text
+  confidence real [note: 'Below 0.5 -> escalate']
+  citations jsonb
+  escalated boolean [not null, default: false]
+  latency_ms int
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table feedback {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  query_id uuid [not null, note: 'on delete cascade']
+  user_id uuid [not null]
+  outcome text [not null, note: 'fixed | not_fixed | call_supervisor']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table escalations {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  query_id uuid [not null]
+  assigned_to uuid
+  status text [not null, default: 'open', note: 'open | answered']
+  reply_text text
+  reply_audio_path text
+  new_record_id uuid [note: 'Repair record created from the reply']
+  created_at timestamptz [not null, default: `now()`]
+  answered_at timestamptz
+  Note: 'Added to supabase_realtime publication'
+}
+
+Table jobs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  type text [not null, note: 'ingest_pdf | import_logs | batch_stt']
+  ref_id uuid
+  status text [not null, default: 'queued', note: 'queued | running | done | failed']
+  progress int [not null, default: 0]
+  error text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+
+// ===================== Relationships =====================
+
+Ref: users.id - auth.users.id [delete: cascade]
+
+// tenant ownership
+Ref: users.tenant_id > tenants.id
+Ref: machine_models.tenant_id > tenants.id
+Ref: machines.tenant_id > tenants.id
+Ref: glossary.tenant_id > tenants.id
+Ref: documents.tenant_id > tenants.id
+Ref: log_imports.tenant_id > tenants.id
+Ref: maintenance_logs.tenant_id > tenants.id
+Ref: symptoms.tenant_id > tenants.id
+Ref: causes.tenant_id > tenants.id
+Ref: fixes.tenant_id > tenants.id
+Ref: repair_records.tenant_id > tenants.id
+Ref: chunks.tenant_id > tenants.id
+Ref: queries.tenant_id > tenants.id
+Ref: feedback.tenant_id > tenants.id
+Ref: escalations.tenant_id > tenants.id
+Ref: jobs.tenant_id > tenants.id
+
+// machines
+Ref: machines.model_id > machine_models.id
+Ref: documents.model_id > machine_models.id
+Ref: maintenance_logs.machine_id > machines.id
+Ref: maintenance_logs.import_id > log_imports.id
+
+// people
+Ref: documents.created_by > users.id
+Ref: log_imports.created_by > users.id
+
+// knowledge
+Ref: repair_records.machine_id > machines.id
+Ref: repair_records.author_id > users.id
+Ref: repair_records.reviewed_by > users.id
+Ref: repair_records.symptom_id > symptoms.id
+Ref: repair_records.cause_id > causes.id
+Ref: repair_records.fix_id > fixes.id
+
+// search
+Ref: chunks.machine_id > machines.id
+Ref: chunks.model_id > machine_models.id
+
+// activity
+Ref: queries.user_id > users.id
+Ref: queries.machine_id > machines.id
+Ref: feedback.query_id > queries.id [delete: cascade]
+Ref: feedback.user_id > users.id
+Ref: escalations.query_id > queries.id
+Ref: escalations.assigned_to > users.id
+Ref: escalations.new_record_id > repair_records.id
+
+// ===================== Groups (colours in dbdiagram) =====================
+
+TableGroup setup [color: #2E5B4E] {
+  tenants
+  users
+  machine_models
+  machines
+  glossary
+}
+
+TableGroup sources [color: #3B5675] {
+  documents
+  log_imports
+  maintenance_logs
+}
+
+TableGroup knowledge [color: #9A6F22] {
+  symptoms
+  causes
+  fixes
+  repair_records
+}
+
+TableGroup search_and_activity [color: #B0412C] {
+  chunks
+  queries
+  feedback
+  escalations
+  jobs
+}

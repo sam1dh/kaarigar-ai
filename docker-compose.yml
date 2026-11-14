@@ -1,0 +1,11 @@
+# Kaarigar AI — local development (Supabase itself runs in the cloud, Mumbai region)
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app          # mounted for reload in dev
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped

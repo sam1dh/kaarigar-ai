@@ -1,0 +1,28 @@
+/*
+  Kaarigar AI design tokens (section 8 of the Phase 0 plan).
+  Rules: yellow only for safety, red only for recording/escalation/errors.
+  Phone buttons are 60px tall. No bottom nav on the phone.
+*/
+:root {
+  --bg-enamel: #e9ede8; /* app background */
+  --surface: #f8f9f6;
+  --white: #ffffff;
+  --ink: #1c2626; /* main text */
+  --ink-muted: #5b6863;
+  --ink-faint: #8a958f;
+  --line: #d3d9d3; /* borders, dividers */
+  --green: #2e5b4e; /* primary buttons, brand */
+  --green-deep: #1f4239; /* brand panel, headings accent */
+  --green-tint: #d6e3dc;
+  --manual: #3b5675;
+  --manual-tint: #dce4ee;
+  --history: #9a6f22;
+  --history-tint: #f1e6cf;
+  --safety: #f3c53a;
+  --safety-tint: #fbf0c8;
+  --alert: #b0412c;
+  --alert-tint: #f5dcd5;
+  --radius-card: 22px;
+  --radius-button: 18px;
+  --radius-input: 16px;
+}

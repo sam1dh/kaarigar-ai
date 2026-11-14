@@ -1,0 +1,48 @@
+{
+  "login": {
+    "plantFallback": "आपका प्लांट",
+    "wordmark": "Kaarigar",
+    "heading": "शिफ्ट शुरू करने के लिए साइन इन करें",
+    "subline": "अपने प्लांट के एक्सपर्ट्स से मरम्मत में मदद, आपकी भाषा में।",
+    "languageLabel": "भाषा",
+    "employeeIdLabel": "कर्मचारी आईडी",
+    "employeeIdPlaceholder": "SH-0412",
+    "pinLabel": "6 अंकों का PIN",
+    "signIn": "साइन इन",
+    "signingIn": "साइन इन हो रहा है…",
+    "scanBadge": "इसके बजाय ID बैज स्कैन करें",
+    "forgotPin": "PIN भूल गए? रीसेट के लिए सुपरवाइज़र से पूछें।",
+    "comingSoon": "जल्द आ रहा है",
+    "invalidLogin": "कर्मचारी आईडी या PIN गलत है। फिर कोशिश करें।",
+    "tooManyAttempts": "बहुत ज़्यादा कोशिश हो गई। सुपरवाइज़र से मदद लें।"
+  },
+  "tech": {
+    "greeting": "सुप्रभात, {{name}}",
+    "greetingEvening": "शुभ संध्या, {{name}}",
+    "greetingAfternoon": "नमस्कार, {{name}}",
+    "whichMachine": "आप किस मशीन पर हैं?",
+    "scanQr": "मशीन पर लगे QR स्टिकर पर कैमरा दिखाएँ",
+    "orTypeCode": "या मशीन कोड टाइप करें",
+    "recentMachines": "सभी मशीनें",
+    "noMachines": "आपके प्लांट में अभी कोई मशीन नहीं है। सुपरवाइज़र से कहें।",
+    "signOut": "साइन आउट"
+  },
+  "manager": {
+    "reviewQueue": "रिव्यू कतार",
+    "escalations": "एस्कलेशन",
+    "knowledgeBase": "नॉलेज बेस",
+    "analytics": "एनालिटिक्स",
+    "team": "टीम",
+    "setup": "सेटअप (केवल एडमिन)",
+    "machines": "मशीनें",
+    "documents": "दस्तावेज़",
+    "breakdownLogs": "ब्रेकडाउन लॉग",
+    "people": "लोग",
+    "supervisor": "सुपरवाइज़र",
+    "admin": "एडमिन",
+    "emptyTitle": "रिव्यू कतार",
+    "emptyBody": "अभी कुछ इंतज़ार नहीं कर रहे। मंज़ूर मरम्मत यहाँ दिखेंगी।",
+    "comingInPhase": "{{phase}} में आ रहा है",
+    "signOut": "साइन आउट"
+  }
+}

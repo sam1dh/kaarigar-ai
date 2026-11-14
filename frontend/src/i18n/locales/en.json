@@ -1,0 +1,48 @@
+{
+  "login": {
+    "plantFallback": "Your plant",
+    "wordmark": "Kaarigar",
+    "heading": "Sign in to start your shift",
+    "subline": "Repair help from your plant's own experts, in your language.",
+    "languageLabel": "Language",
+    "employeeIdLabel": "Employee ID",
+    "employeeIdPlaceholder": "SH-0412",
+    "pinLabel": "6-digit PIN",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "scanBadge": "Scan your ID badge instead",
+    "forgotPin": "Forgot your PIN? Ask your supervisor to reset it.",
+    "comingSoon": "Coming soon",
+    "invalidLogin": "Wrong employee ID or PIN. Please try again.",
+    "tooManyAttempts": "Too many tries. Ask your supervisor to help."
+  },
+  "tech": {
+    "greeting": "Good morning, {{name}}",
+    "greetingEvening": "Good evening, {{name}}",
+    "greetingAfternoon": "Good afternoon, {{name}}",
+    "whichMachine": "Which machine are you at?",
+    "scanQr": "Point the camera at the QR sticker on the machine",
+    "orTypeCode": "Or type a machine code",
+    "recentMachines": "All machines",
+    "noMachines": "No machines in your plant yet. Ask your supervisor to set them up.",
+    "signOut": "Sign out"
+  },
+  "manager": {
+    "reviewQueue": "Review queue",
+    "escalations": "Escalations",
+    "knowledgeBase": "Knowledge base",
+    "analytics": "Analytics",
+    "team": "Team",
+    "setup": "Setup (admin only)",
+    "machines": "Machines",
+    "documents": "Documents",
+    "breakdownLogs": "Breakdown logs",
+    "people": "People",
+    "supervisor": "Supervisor",
+    "admin": "Admin",
+    "emptyTitle": "Review queue",
+    "emptyBody": "Nothing waiting yet. Approved repairs will show up here.",
+    "comingInPhase": "Coming in {{phase}}",
+    "signOut": "Sign out"
+  }
+}
