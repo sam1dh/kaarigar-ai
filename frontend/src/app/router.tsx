@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { ToastViewport } from "@/components/ui/toast";
 import { homeForRole, useSessionStore } from "@/stores/session";
@@ -26,9 +26,12 @@ function Splash() {
 /** Guard: only lets the given roles through; otherwise redirects to the right place. */
 function RequireRole({
   roles,
+  loginTo,
   children,
 }: {
   roles: string[];
+  /** Login screen for this area — /tech sends back to /login, /manager to /manager/login. */
+  loginTo: string;
   children: ReactNode;
 }) {
   const profile = useSessionStore((s) => s.profile);
@@ -37,12 +40,7 @@ function RequireRole({
   if (loading) return <Splash />;
   if (!profile) {
     // Not signed in → the login screen for this area.
-    return (
-      <Navigate
-        to={roles.includes("supervisor") ? "/manager/login" : "/login"}
-        replace
-      />
-    );
+    return <Navigate to={loginTo} replace />;
   }
   if (!roles.includes(profile.role)) {
     return <Navigate to={homeForRole(profile.role)} replace />;
@@ -87,7 +85,10 @@ export default function Router() {
 
   return (
     <>
-      <Routes>
+      {/* Lazy locale chunks suspend on first render / language switch —
+          the Splash keeps the current screen mounted instead of blanking. */}
+      <Suspense fallback={<Splash />}>
+        <Routes>
         {/* Public */}
         <Route
           path="/login"
@@ -110,7 +111,7 @@ export default function Router() {
         <Route
           path="/tech"
           element={
-            <RequireRole roles={["technician", "expert", "supervisor"]}>
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
               <TechHome />
             </RequireRole>
           }
@@ -120,7 +121,7 @@ export default function Router() {
         <Route
           path="/manager"
           element={
-            <RequireRole roles={["supervisor"]}>
+            <RequireRole roles={["supervisor"]} loginTo="/manager/login">
               <ManagerLayout />
             </RequireRole>
           }
@@ -160,6 +161,7 @@ export default function Router() {
         {/* Catch-all */}
         <Route path="*" element={<RootRedirect />} />
       </Routes>
+      </Suspense>
       <ToastViewport />
     </>
   );

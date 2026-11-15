@@ -49,7 +49,13 @@ export async function api<T = unknown>(
       if (data?.error?.code) code = data.error.code;
       if (data?.error?.message) message = data.error.message;
     } catch {
-      /* non-JSON error body */
+      /* non-JSON error body (e.g. proxy 500 when the backend is down) */
+    }
+    // 5xx means the service itself failed — never tell the user their
+    // credentials were wrong (test case PL-09).
+    if (res.status >= 500) {
+      code = "server_error";
+      message = "Can't reach the service. Please try again.";
     }
     throw new ApiError(res.status, code, message);
   }

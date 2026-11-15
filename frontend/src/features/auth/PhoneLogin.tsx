@@ -123,11 +123,16 @@ export default function PhoneLogin() {
         const key =
           err.code === "too_many_attempts"
             ? "login.tooManyAttempts"
-            : "login.invalidLogin";
+            : err.code === "invalid_login"
+              ? "login.invalidLogin"
+              : "login.networkError"; // server_error / validation → connectivity message
         setError(t(key));
       } else {
-        setError(t("login.invalidLogin"));
+        setError(t("login.networkError"));
       }
+      // Clear the PIN so a retry starts fresh (test case PL-06).
+      setPin(Array(PIN_LENGTH).fill(""));
+      pinRefs.current[0]?.focus();
     } finally {
       setBusy(false);
     }

@@ -1,4 +1,5 @@
 import i18n from "i18next";
+import { startTransition } from "react";
 import { initReactI18next } from "react-i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
 import {
@@ -42,7 +43,17 @@ export async function applyLanguage(code: string): Promise<void> {
   const lang = languageShortCode(code);
   document.documentElement.lang = lang;
   document.documentElement.dataset.script = scriptFor(code);
-  await i18n.changeLanguage(code);
+  // startTransition: while the lazy locale chunk loads, react-i18next
+  // suspends — as a transition it keeps the current screen mounted
+  // instead of blanking during a click (React 18 requirement).
+  await new Promise<void>((resolve) => {
+    startTransition(() => {
+      void i18n
+        .changeLanguage(code)
+        .catch(() => undefined)
+        .finally(() => resolve());
+    });
+  });
 }
 
 function languageShortCode(code: string): string {

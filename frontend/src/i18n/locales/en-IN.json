@@ -17,7 +17,7 @@
     "forgotPin": "Forgot your PIN? Ask your supervisor to reset it.",
     "comingSoon": "Coming soon",
     "invalidLogin": "Wrong employee ID or PIN. Please try again.",
-    "tooManyAttempts": "Too many tries. Ask your supervisor to help.",
+    "tooManyAttempts": "Too many tries. Try again in a few minutes, or ask your supervisor to help.",
     "networkError": "You're offline. Check your connection and try again.",
     "webHeadline": "Every fix your experts make, ready for the next shift.",
     "webSub": "Review repairs, answer escalations and keep your plant's know-how in one place.",
