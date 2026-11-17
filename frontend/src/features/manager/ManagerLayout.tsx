@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { initials } from "@/features/auth/types";
+import { getReviewCount } from "@/features/capture/captureApi";
 import { useSessionStore } from "@/stores/session";
 import LanguageSheet from "@/components/LanguageSheet";
 import TextSizeControl from "@/components/TextSizeControl";
@@ -38,6 +39,25 @@ export default function ManagerLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
+  const [reviewCount, setReviewCount] = useState<number | null>(null);
+
+  // Badge on "Review queue": count of pending notes, refreshed every 30 s.
+  useEffect(() => {
+    let alive = true;
+    const tick = () => {
+      getReviewCount()
+        .then((d) => {
+          if (alive) setReviewCount(d.count);
+        })
+        .catch(() => {});
+    };
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
 
   const mainNav: NavItem[] = useMemo(
     () => [
@@ -145,6 +165,11 @@ export default function ManagerLayout() {
             >
               <span className="mt-0.5 shrink-0">{item.icon}</span>
               <span className="break-words">{t(item.labelKey)}</span>
+              {item.to === "/manager" && !!reviewCount && (
+                <span className="ml-auto shrink-0 rounded-full bg-alert px-2 py-0.5 text-xs font-semibold text-white">
+                  {reviewCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
