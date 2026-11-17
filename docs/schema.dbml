@@ -1,4 +1,4 @@
-// Kaarigar AI — database schema (Phase 0, migration 0001_init.sql)
+// Kaarigar AI — database schema (migrations 0001_init.sql + 0002_phase1.sql)
 // Paste into https://dbdiagram.io to view.
 // Source of truth is supabase/migrations/*.sql. Update this file whenever a migration changes.
 // Status/type columns are text + CHECK in SQL; allowed values are listed in each note.
@@ -40,7 +40,7 @@ Table users {
   employee_id text [note: 'SH-0412; null for email-login managers']
   role text [not null, note: 'technician | expert | supervisor']
   is_admin boolean [not null, default: false, note: 'Shows the Setup tab in Manager web']
-  language text [not null, default: 'hi-IN', note: 'hi-IN | mr-IN | en-IN ...']
+  language text [not null, default: 'hi-IN', note: 'Sarvam code of an enabled language in shared/languages.json: en-IN hi-IN pa-IN mr-IN gu-IN bn-IN od-IN ta-IN te-IN kn-IN ml-IN. Checked by the backend, not a DB constraint.']
   created_at timestamptz [not null, default: `now()`]
 
   indexes {
@@ -95,7 +95,9 @@ Table documents {
   file_path text [not null, note: 'Path in the documents bucket']
   status text [not null, default: 'uploaded', note: 'uploaded | parsing | ready | failed']
   pages int
-  quality_notes text
+  quality_notes text [note: 'e.g. Page 4 is a scanned image with no text']
+  error text [note: '0002: reason when status = failed']
+  file_hash text [note: '0002: sha256, duplicate upload check']
   created_by uuid
   created_at timestamptz [not null, default: `now()`]
   Note: 'OEM manuals / SOPs uploaded by admin'
@@ -105,12 +107,19 @@ Table log_imports {
   id uuid [pk, default: `gen_random_uuid()`]
   tenant_id uuid [not null]
   file_path text [not null, note: 'Path in the imports bucket']
-  column_mapping jsonb [note: 'LLM-suggested Excel column -> field mapping']
+  column_mapping jsonb [note: 'Excel column -> field mapping (suggested by rules or LLM, confirmed by admin)']
+  file_name text [note: '0002']
+  file_hash text [note: '0002: sha256, duplicate import check']
+  detected jsonb [note: '0002: {header_row, columns, sample_rows, total_rows, mapping_source, skipped:[{row, reason}]}']
   status text [not null, default: 'uploaded', note: 'uploaded | mapping | importing | done | failed']
   rows_ok int [not null, default: 0]
   rows_skipped int [not null, default: 0]
   created_by uuid
   created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tenant_id, file_hash) [name: 'log_imports_hash_idx', note: '0002']
+  }
   Note: 'One row per breakdown-log Excel upload'
 }
 
@@ -126,6 +135,10 @@ Table maintenance_logs {
   technician text
   raw jsonb [note: 'Original Excel row']
   created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tenant_id, machine_id, date) [name: 'maintenance_logs_machine_idx', note: '0002 (date desc)']
+  }
   Note: 'Machine history (H sources)'
 }
 
@@ -137,6 +150,7 @@ Table symptoms {
   name text [not null]
   aliases text[] [not null, default: `'{}'`]
   indexes {
+    name [name: 'symptoms_name_trgm_idx', type: gin, note: '0002: gin_trgm_ops, graph retriever']
     (tenant_id, name) [unique]
   }
 }
@@ -172,7 +186,7 @@ Table repair_records {
   cause_id uuid
   fix_id uuid
   safety_note text
-  fields jsonb [note: 'All extracted fields from the LLM']
+  fields jsonb [note: 'All extracted fields from the LLM; seed records carry seed_key (R01..R26)']
   ai_check jsonb [note: 'AI quality check result']
   status text [not null, default: 'draft', note: 'draft | expert_review | pending | approved | rejected']
   reject_reason text
@@ -180,6 +194,11 @@ Table repair_records {
   reviewed_at timestamptz
   source text [not null, default: 'capture', note: 'capture | escalation | seed']
   created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tenant_id, symptom_id) [name: 'repair_records_symptom_idx', note: "0002: where status = 'approved'"]
+    `(fields->>'seed_key')` [name: 'repair_records_seed_key_idx', note: '0002']
+  }
   Note: 'Expert knowledge (E sources). Only approved rows go into chunks.'
 }
 
@@ -196,6 +215,9 @@ Table chunks {
   text text [not null]
   embedding vector(384) [note: 'bge-small-en-v1.5']
   tsv tsvector [note: 'GENERATED ALWAYS AS to_tsvector(english, text) STORED']
+  page int [note: '0002: page where a manual chunk starts (citations)']
+  chunk_index int [not null, default: 0, note: '0002: order inside its source']
+  meta jsonb [not null, default: `'{}'::jsonb`, note: '0002: {embed_model, seed_key?, ocr?, row?}']
   created_at timestamptz [not null, default: `now()`]
 
   indexes {
@@ -203,6 +225,7 @@ Table chunks {
     tsv [name: 'chunks_tsv_idx', type: gin]
     text [name: 'chunks_trgm_idx', type: gin, note: 'gin_trgm_ops']
     (tenant_id, machine_id, model_id) [name: 'chunks_scope_idx']
+    (source_type, source_id) [name: 'chunks_source_idx', note: '0002']
   }
   Note: 'One search table for manuals, records and logs (hybrid search)'
 }
@@ -216,7 +239,7 @@ Table queries {
   machine_id uuid
   question_original text
   question_en text
-  language text
+  language text [note: 'Language the question was asked in (Sarvam code)']
   answer text
   confidence real [note: 'Below 0.5 -> escalate']
   citations jsonb

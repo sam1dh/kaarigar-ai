@@ -74,9 +74,39 @@ app.include_router(manager.router)
 app.include_router(admin.router)
 
 
+@app.on_event("startup")
+def startup() -> None:
+    # Phase 1: psycopg pool (lazy on first use), embed model in the background,
+    # and any job queued by the previous process is dead.
+    if settings.database_url:
+        from app.services import embeddings, jobs
+
+        jobs.fail_stale_jobs()
+        embeddings.start_loading()
+
+
+@app.on_event("shutdown")
+def shutdown() -> None:
+    if settings.database_url:
+        from app.core.db import close_pool
+
+        close_pool()
+
+
 @app.get("/health")
 def health() -> dict:
+    if settings.database_url:
+        from app.services import embeddings
+
+        return {"status": "ok", "models": embeddings.status()}
     return {"status": "ok"}
+
+
+# /dev/search + /dev/stats: only in development
+if settings.app_env == "development":
+    from app.routers import dev
+
+    app.include_router(dev.router)
 
 
 install_error_handlers(app)

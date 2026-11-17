@@ -1,0 +1,122 @@
+# Search test set for Phase 1 (no LLM). Run: python -m scripts.eval_search
+# Queries are in English because Sarvam Saaras (mode=translate) turns speech into English before search.
+# A case is a HIT at k if ANY of the top-k results matches ANY item in `expect_any`:
+#   - {type: record, key: R01}                    -> chunk.meta.seed_key == "R01"
+#   - {type: manual, model: HPX-200, contains: x} -> manual chunk of that model whose text contains x (case-insensitive)
+#   - {type: log, machine: HP-07, contains: x}    -> log chunk of that machine whose text contains x (case-insensitive)
+# Targets: hit@8 >= 0.85, hit@3 >= 0.65 (rerank off). Report MRR and p50/p95 latency too.
+
+plant: shree
+cases:
+  - id: Q01
+    q: HP-07 pressure is not building up
+    machine: HP-07
+    expect_any: [{type: record, key: R01}, {type: record, key: R09}, {type: manual, model: HPX-200, contains: "pressure not building"}]
+  - id: Q02
+    q: knocking sound from the pump, thak thak
+    machine: HP-07
+    expect_any: [{type: record, key: R02}, {type: record, key: R11}, {type: manual, model: HPX-200, contains: "cavitation"}]
+  - id: Q03
+    q: ram is moving very slowly while pressing
+    machine: HP-07
+    expect_any: [{type: record, key: R03}, {type: manual, model: HPX-200, contains: "suction strainer"}]
+  - id: Q04
+    q: oil leaking from the cylinder rod
+    machine: HP-02
+    expect_any: [{type: record, key: R04}, {type: manual, model: HPX-200, contains: "rod seal"}]
+  - id: Q05
+    q: hydraulic oil is getting very hot
+    machine: HP-07
+    expect_any: [{type: record, key: R05}, {type: record, key: R26}, {type: manual, model: HPX-200, contains: "E-05"}]
+  - id: Q06
+    q: ram slowly comes down by itself when stopped at the top
+    machine: HP-02
+    expect_any: [{type: record, key: R06}, {type: record, key: R12}, {type: manual, model: HPX-200, contains: "drifts down"}]
+  - id: Q07
+    q: ram moving with jerks after changing the seal
+    machine: HP-07
+    expect_any: [{type: record, key: R07}, {type: manual, model: HPX-200, contains: "bleeding air"}]
+  - id: Q08
+    q: motor keeps tripping with E-04
+    machine: HP-07
+    expect_any: [{type: record, key: R08}, {type: manual, model: HPX-200, contains: "E-04"}]
+  - id: Q09
+    q: what is the relief valve pressure setting
+    machine: HP-07
+    expect_any: [{type: manual, model: HPX-200, contains: "210 bar"}, {type: record, key: R01}]
+  - id: Q10
+    q: how often should the return filter be changed
+    machine: HP-07
+    expect_any: [{type: manual, model: HPX-200, contains: "return filter"}]
+  - id: Q11
+    q: pressure gauge needle is shaking
+    machine: HP-07
+    expect_any: [{type: record, key: R10}, {type: manual, model: HPX-200, contains: "snubber"}]
+  - id: Q12
+    q: what does error E-07 mean
+    machine: HP-07
+    expect_any: [{type: manual, model: HPX-200, contains: "E-07"}]
+  - id: Q13
+    q: spindle not starting, alarm 2001
+    machine: CNC-03
+    expect_any: [{type: record, key: R13}, {type: manual, model: CL-40, contains: "2001"}]
+  - id: Q14
+    q: chatter marks on the job surface
+    machine: CNC-03
+    expect_any: [{type: record, key: R14}, {type: manual, model: CL-40, contains: "chatter"}]
+  - id: Q15
+    q: coolant is not coming to the tool
+    machine: CNC-03
+    expect_any: [{type: record, key: R15}, {type: manual, model: CL-40, contains: "coolant"}]
+  - id: Q16
+    q: lube alarm on the lathe
+    machine: CNC-03
+    expect_any: [{type: record, key: R16}, {type: manual, model: CL-40, contains: "1012"}]
+  - id: Q17
+    q: size is not holding in the morning
+    machine: CNC-03
+    expect_any: [{type: record, key: R17}, {type: record, key: R19}, {type: manual, model: CL-40, contains: "warm-up"}]
+  - id: Q18
+    q: chuck is not gripping the job properly
+    machine: CNC-03
+    expect_any: [{type: record, key: R18}, {type: manual, model: CL-40, contains: "3010"}]
+  - id: Q19
+    q: compressor is not building air pressure
+    machine: AC-01
+    expect_any: [{type: record, key: R20}, {type: record, key: R21}, {type: manual, model: AC-75, contains: "does not reach"}]
+  - id: Q20
+    q: compressor getting hot and tripping
+    machine: AC-01
+    expect_any: [{type: record, key: R22}, {type: manual, model: AC-75, contains: "discharge temperature"}]
+  - id: Q21
+    q: water is coming in the air line
+    machine: AC-01
+    expect_any: [{type: record, key: R23}, {type: manual, model: AC-75, contains: "auto drain"}]
+  - id: Q22
+    q: safety valve keeps blowing
+    machine: AC-01
+    expect_any: [{type: record, key: R24}, {type: manual, model: AC-75, contains: "safety valve"}]
+  - id: Q23
+    q: oil is coming out with the compressed air
+    machine: AC-01
+    expect_any: [{type: record, key: R25}, {type: manual, model: AC-75, contains: "separator"}]
+  - id: Q24
+    q: has HP-07 had oil leak breakdowns before
+    machine: HP-07
+    expect_any: [{type: log, machine: HP-07, contains: "leak"}, {type: record, key: R04}]
+  - id: Q25
+    q: what is the cut-out pressure of the compressor
+    machine: AC-01
+    expect_any: [{type: manual, model: AC-75, contains: "8.0 bar"}, {type: record, key: R24}]
+  - id: Q26
+    q: E05 alarm
+    machine: HP-07
+    expect_any: [{type: manual, model: HPX-200, contains: "E-05"}, {type: record, key: R05}]
+  - id: Q27
+    q: pump noise
+    machine: null          # no machine selected: search the whole plant
+    expect_any: [{type: record, key: R02}, {type: record, key: R11}, {type: manual, model: HPX-200, contains: "cavitation"}]
+  - id: Q28
+    q: coolant concentration
+    machine: null
+    expect_any: [{type: manual, model: CL-40, contains: "concentration"}, {type: record, key: R15}]

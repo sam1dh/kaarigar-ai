@@ -10,7 +10,9 @@ client = TestClient(app)
 def test_health() -> None:
     resp = client.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+    body = resp.json()
+    assert body["status"] == "ok"
+    assert set(body["models"]) == {"embed", "rerank"}
 
 
 def test_auth_required() -> None:

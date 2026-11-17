@@ -1,0 +1,373 @@
+# Kaarigar AI — Phase 1 knowledge seed for the demo plant (Shree Hydraulics, slug "shree").
+# Loaded by backend/scripts/seed_knowledge.py. Safe to load again: rows are matched by `key` / `term` / `name`.
+# All records are written as if an expert recorded them and a supervisor approved them.
+
+plant: shree
+author_employee_id: SH-0107        # Ramesh Patil (expert)
+reviewer_email: suresh@shreehydraulics.in
+
+# Shop-floor words technicians say. Used to expand search queries.
+glossary:
+  - { term: thak-thak,    meaning: knocking sound,        keep_in_english: false }
+  - { term: khat-khat,    meaning: rattling noise,        keep_in_english: false }
+  - { term: awaaz,        meaning: noise,                 keep_in_english: false }
+  - { term: dabav,        meaning: pressure,              keep_in_english: false }
+  - { term: garam,        meaning: hot,                   keep_in_english: false }
+  - { term: tapak raha,   meaning: dripping leak,         keep_in_english: false }
+  - { term: jhatke,       meaning: jerky movement,        keep_in_english: false }
+  - { term: dheema,       meaning: slow,                  keep_in_english: false }
+  - { term: khisak raha,  meaning: drifting down,         keep_in_english: false }
+  - { term: naap,         meaning: size measurement,      keep_in_english: false }
+  - { term: pani,         meaning: water,                 keep_in_english: false }
+  - { term: band ho gaya, meaning: stopped,               keep_in_english: false }
+  - { term: ram,          meaning: press ram,             keep_in_english: true }
+  - { term: seal,         meaning: seal,                  keep_in_english: true }
+  - { term: chuck,        meaning: lathe chuck,           keep_in_english: true }
+  - { term: trip,         meaning: protective trip,       keep_in_english: true }
+
+symptoms:
+  - { key: S01, name: ram moving slowly,                  aliases: [slow ram, slow pressing stroke, press slow, dheema chal raha, speed kam] }
+  - { key: S02, name: pressure not building,              aliases: [low pressure, pressure drop, dabav nahi ban raha, pressure kam, E-07] }
+  - { key: S03, name: knocking noise from pump,           aliases: [pump noise, thak-thak, khat-khat awaaz, cavitation noise, pump awaaz] }
+  - { key: S04, name: oil leak at cylinder rod,           aliases: [rod leak, oil tapak raha, ram leak, leak from ram] }
+  - { key: S05, name: hydraulic oil overheating,          aliases: [oil garam, tank hot, high oil temperature, E-05] }
+  - { key: S06, name: ram drifting down when stopped,     aliases: [ram creeping, ram neeche khisak raha, ram not holding] }
+  - { key: S07, name: jerky ram movement,                 aliases: [jhatke, chattering ram, ram jumping] }
+  - { key: S08, name: pressure gauge needle fluttering,   aliases: [gauge shaking, needle hil rahi, gauge vibrating] }
+  - { key: S09, name: motor overload trip,                aliases: [motor trip, E-04, overload tripping] }
+  - { key: S10, name: spindle not starting,               aliases: [spindle nahi ghoom raha, alarm 2001, spindle drive fault] }
+  - { key: S11, name: chatter marks on job surface,       aliases: [poor surface finish, finish kharab, lines on job] }
+  - { key: S12, name: coolant not coming,                 aliases: [no coolant, coolant nahi aa raha, coolant flow low] }
+  - { key: S13, name: low lubrication alarm,              aliases: [lube alarm, alarm 1012, way oil alarm] }
+  - { key: S14, name: job size not holding,               aliases: [size variation, dimension variation, size nahi aa raha, naap badal raha] }
+  - { key: S15, name: chuck not gripping,                 aliases: [job slipping in chuck, chuck pakad nahi raha, alarm 3010] }
+  - { key: S16, name: compressor not reaching pressure,   aliases: [air pressure low, air pressure kam, compressor not loading] }
+  - { key: S17, name: compressor overheating,             aliases: [compressor garam, high discharge temperature, compressor temperature trip] }
+  - { key: S18, name: water in air line,                  aliases: [pani aa raha line mein, moisture in air] }
+  - { key: S19, name: safety valve popping,               aliases: [safety valve blowing, safety valve blow] }
+  - { key: S20, name: oil in compressed air,              aliases: [oil carryover, oil aa raha air mein] }
+
+causes:
+  - { key: C01, name: relief valve set too low }
+  - { key: C02, name: air entering pump suction }
+  - { key: C03, name: suction strainer clogged }
+  - { key: C04, name: worn rod seal }
+  - { key: C05, name: oil cooler choked }
+  - { key: C06, name: counterbalance valve leaking }
+  - { key: C07, name: air trapped in cylinder }
+  - { key: C08, name: overload from high relief setting and low voltage }
+  - { key: C09, name: worn hydraulic pump }
+  - { key: C10, name: gauge snubber missing }
+  - { key: C11, name: worn coupling spider }
+  - { key: C12, name: worn piston seal }
+  - { key: C13, name: door interlock switch misaligned }
+  - { key: C14, name: worn insert and long tool overhang }
+  - { key: C15, name: coolant pump strainer choked }
+  - { key: C16, name: lube tank low and cracked lube line }
+  - { key: C17, name: thermal growth at start of shift }
+  - { key: C18, name: chuck pressure low and jaws dry }
+  - { key: C19, name: x-axis backlash after crash }
+  - { key: C20, name: intake filter choked }
+  - { key: C21, name: unloader valve stuck open }
+  - { key: C22, name: compressor oil level low }
+  - { key: C23, name: auto drain valve stuck }
+  - { key: C24, name: pressure switch cut-out set too high }
+  - { key: C25, name: separator element saturated }
+  - { key: C26, name: unloading circuit not working }
+
+fixes:
+  - { key: F01, name: reset relief valve to 210 bar }
+  - { key: F02, name: top up oil and tighten suction clamp }
+  - { key: F03, name: clean suction strainer and replace return filter }
+  - { key: F04, name: replace rod seal kit }
+  - { key: F05, name: clean oil cooler and repair cooler fan }
+  - { key: F06, name: clean counterbalance valve and replace o-rings }
+  - { key: F07, name: bleed air from cylinder }
+  - { key: F08, name: correct supply voltage and relief setting }
+  - { key: F09, name: replace hydraulic pump }
+  - { key: F10, name: fit snubber and replace gauge }
+  - { key: F11, name: replace coupling spider and align }
+  - { key: F12, name: replace piston seal kit }
+  - { key: F13, name: realign door interlock switch }
+  - { key: F14, name: replace insert and reduce overhang }
+  - { key: F15, name: clean coolant strainer and flush line }
+  - { key: F16, name: refill way oil and replace lube line }
+  - { key: F17, name: run warm-up program before first job }
+  - { key: F18, name: set chuck pressure 25 bar and grease jaws }
+  - { key: F19, name: update backlash compensation }
+  - { key: F20, name: replace intake filter element }
+  - { key: F21, name: overhaul unloader valve }
+  - { key: F22, name: top up compressor oil and clean cooler }
+  - { key: F23, name: clean auto drain valve }
+  - { key: F24, name: set pressure switch cut-out to 8 bar }
+  - { key: F25, name: replace separator element }
+  - { key: F26, name: repair unloading circuit }
+
+# 26 approved repair records. `date` becomes created_at / reviewed_at.
+records:
+  - key: R01
+    machine: HP-07
+    date: 2026-01-14
+    symptom: S02
+    cause: C01
+    fix: F01
+    transcript_en: >-
+      Pressure was not going above 150 bar on HP-07. Someone had loosened the relief valve during the night shift.
+      I put the test gauge on the pump outlet, set the relief valve back to 210 bar and tightened the lock nut.
+      Pressure came back to normal in five minutes.
+    safety_note: Lower the ram onto safety blocks and release system pressure before touching the relief valve.
+  - key: R02
+    machine: HP-07
+    date: 2026-01-29
+    symptom: S03
+    cause: C02
+    fix: F02
+    transcript_en: >-
+      Pump was making thak-thak knocking sound. Oil level was below the sight glass and the suction hose clamp was loose,
+      so the pump was sucking air. I topped up ISO VG 46 oil to the middle of the sight glass, tightened the clamp
+      and ran the pump unloaded for five minutes to remove air. Noise stopped.
+    safety_note: Never run the pump with oil below the minimum mark.
+  - key: R03
+    machine: HP-07
+    date: 2026-02-11
+    symptom: S01
+    cause: C03
+    fix: F03
+    transcript_en: >-
+      Ram was coming down very slowly in the pressing stroke. Return filter indicator was red. When I opened the tank,
+      the suction strainer was full of sludge. Cleaned the strainer with diesel, replaced the 10 micron return filter element.
+      Speed came back to normal.
+    safety_note: Switch off and lock out the pump motor before opening the tank.
+  - key: R04
+    machine: HP-02
+    date: 2026-02-20
+    symptom: S04
+    cause: C04
+    fix: F04
+    transcript_en: >-
+      Oil dripping from the cylinder rod on HP-02, about one cup per shift. Rod seal was worn and the rod had light scratches.
+      Replaced the rod seal kit SK-200-R and polished the small scratches with 600 grit paper. Deep scoring would need re-chroming.
+    safety_note: Support the ram mechanically on blocks before opening the gland. Do not rely on hydraulic pressure.
+  - key: R05
+    machine: HP-07
+    date: 2026-03-05
+    symptom: S05
+    cause: C05
+    fix: F05
+    transcript_en: >-
+      Oil temperature went to 68 degrees and the press showed E-05. Cooler fins were fully choked with dust and the cooler fan
+      was not running because of a blown fuse. Cleaned the cooler with compressed air from the fan side and replaced the fuse.
+      Oil now stays below 55 degrees.
+    safety_note: Let the oil cool below 45 degrees before working near the tank and cooler.
+  - key: R06
+    machine: HP-02
+    date: 2026-03-18
+    symptom: S06
+    cause: C06
+    fix: F06
+    transcript_en: >-
+      Ram on HP-02 was slowly drifting down when stopped at top. Counterbalance valve was passing oil.
+      Removed the counterbalance valve, cleaned the seat and replaced the O-rings. Hold test for 10 minutes showed less than 2 mm drift.
+    safety_note: Keep hands out of the die area during the drift test. Use safety blocks.
+  - key: R07
+    machine: HP-07
+    date: 2026-04-02
+    symptom: S07
+    cause: C07
+    fix: F07
+    transcript_en: >-
+      After the seal change the ram was moving with jerks. Air was trapped in the cylinder. Opened the bleed screws at the top
+      of the cylinder and cycled the ram slowly over full stroke ten times until clear oil came out without bubbles.
+    safety_note: Work from the side of the press and wear goggles while bleeding; oil comes out under pressure.
+  - key: R08
+    machine: HP-07
+    date: 2026-04-16
+    symptom: S09
+    cause: C08
+    fix: F08
+    transcript_en: >-
+      Motor tripping on overload with E-04 during long pressing jobs. Supply voltage was dropping to 370 volts in the afternoon
+      and the relief valve had been set to 230 bar. Electrician fixed the loose incoming terminal, voltage now 410 volts.
+      Set the relief back to 210 bar. Overload relay is set at 30 amps.
+    safety_note: Only a licensed electrician should open the motor terminal box.
+  - key: R09
+    machine: HP-02
+    date: 2026-05-07
+    symptom: S02
+    cause: C09
+    fix: F09
+    transcript_en: >-
+      HP-02 not building pressure even after resetting the relief valve. Measured case drain flow from the pump, it was 6 litres
+      per minute, normal is below 4. Pump was worn inside. Replaced the pump and flushed the system. Pressure reached 210 bar.
+    safety_note: Isolate power and release pressure before disconnecting pump hoses.
+  - key: R10
+    machine: HP-07
+    date: 2026-05-21
+    symptom: S08
+    cause: C10
+    fix: F10
+    transcript_en: >-
+      Pressure gauge needle was fluttering badly and the gauge glass was cracked. The snubber was missing.
+      Fitted a new snubber and a glycerine-filled 0 to 400 bar gauge. Needle is steady now.
+    safety_note: Release pressure before removing the gauge.
+  - key: R11
+    machine: HP-02
+    date: 2026-06-03
+    symptom: S03
+    cause: C11
+    fix: F11
+    transcript_en: >-
+      Khat-khat noise from the pump area on HP-02 but oil level was fine. The rubber spider in the motor to pump coupling was broken.
+      Replaced the spider and aligned the motor and pump within 0.1 mm using a dial gauge.
+    safety_note: Lock out the motor before removing the coupling guard.
+  - key: R12
+    machine: HP-07
+    date: 2026-06-24
+    symptom: S06
+    cause: C12
+    fix: F12
+    transcript_en: >-
+      HP-07 ram was creeping down about 10 mm in 5 minutes. Counterbalance valve tested fine, so the leak was across the piston.
+      Replaced the piston seal kit SK-200-P. Drift is now under 2 mm in 10 minutes.
+    safety_note: Ram must rest on safety blocks while the cylinder is open.
+  - key: R13
+    machine: CNC-03
+    date: 2026-01-22
+    symptom: S10
+    cause: C13
+    fix: F13
+    transcript_en: >-
+      Spindle not starting on CNC-03, alarm 2001 spindle drive fault. The door interlock switch actuator was bent, so the control
+      thought the door was open. Realigned the switch and cleaned the actuator. Spindle started normally.
+    safety_note: Never bypass the door interlock to run the spindle.
+  - key: R14
+    machine: CNC-03
+    date: 2026-02-26
+    symptom: S11
+    cause: C14
+    fix: F14
+    transcript_en: >-
+      Chatter marks on the turned surface. Insert edge was worn and the boring bar was sticking out too far.
+      Replaced the insert, reduced overhang to less than 1.5 times the shank size and reduced spindle speed by 10 percent.
+    safety_note: Stop the spindle fully before changing inserts.
+  - key: R15
+    machine: CNC-03
+    date: 2026-03-12
+    symptom: S12
+    cause: C15
+    fix: F15
+    transcript_en: >-
+      Coolant was not coming to the tool. Coolant pump strainer in the tank was blocked with chips. Cleaned the strainer and flushed
+      the line. Also corrected coolant concentration to 6 percent.
+    safety_note: Switch off the coolant pump before putting hands in the tank.
+  - key: R16
+    machine: CNC-03
+    date: 2026-04-09
+    symptom: S13
+    cause: C16
+    fix: F16
+    transcript_en: >-
+      Alarm 1012 low lubrication. Lube tank was almost empty and the lube line near the Z-axis was cracked and leaking.
+      Refilled way oil ISO VG 68 and replaced the cracked line. Ran manual lube cycle three times.
+    safety_note: Use only the specified way oil; coolant in the lube tank damages the slideways.
+  - key: R17
+    machine: CNC-03
+    date: 2026-05-14
+    symptom: S14
+    cause: C17
+    fix: F17
+    transcript_en: >-
+      First few jobs in the morning were coming 0.02 mm oversize, later jobs were fine. This is thermal growth of the spindle.
+      Started running warm-up program O9000 for 15 minutes before the first job. Size is stable now.
+    safety_note: Keep the door closed while the warm-up program runs.
+  - key: R18
+    machine: CNC-03
+    date: 2026-06-11
+    symptom: S15
+    cause: C18
+    fix: F18
+    transcript_en: >-
+      Job slipping in the chuck and alarm 3010 chuck pressure low. Chuck pressure regulator was set to 12 bar and the jaws were dry.
+      Set pressure to 25 bar and greased the chuck through the grease nipples. Now we grease it every week.
+    safety_note: Never increase chuck pressure above the chuck rating marked on the body.
+  - key: R19
+    machine: CNC-03
+    date: 2026-07-02
+    symptom: S14
+    cause: C19
+    fix: F19
+    transcript_en: >-
+      After a small crash, diameters were varying all day. Measured X-axis backlash with a dial indicator, it was 0.03 mm.
+      Updated the backlash compensation value in Settings, Axis, Backlash and checked the ball screw nut for damage.
+    safety_note: Keep feed override at 10 percent while measuring with the dial indicator.
+  - key: R20
+    machine: AC-01
+    date: 2026-01-08
+    symptom: S16
+    cause: C20
+    fix: F20
+    transcript_en: >-
+      Compressor AC-01 was not reaching 8 bar, stuck around 6. Air intake filter was black and choked with dust.
+      Replaced the intake filter element. Pressure reached cut-out normally.
+    safety_note: Stop the compressor and wait for the tank pressure to drop before opening the filter housing.
+  - key: R21
+    machine: AC-01
+    date: 2026-03-26
+    symptom: S16
+    cause: C21
+    fix: F21
+    transcript_en: >-
+      Compressor running but air pressure low again, filter was clean. Unloader valve was stuck open so the compressor
+      was not loading properly. Cleaned the unloader valve and replaced the diaphragm.
+    safety_note: Release all air pressure and lock out power before opening the unloader valve.
+  - key: R22
+    machine: AC-01
+    date: 2026-04-23
+    symptom: S17
+    cause: C22
+    fix: F22
+    transcript_en: >-
+      Compressor getting hot and tripping on high discharge temperature at 110 degrees. Oil level was below the minimum mark.
+      Topped up with the specified compressor oil and cleaned the cooler. Temperature now around 85 degrees.
+    safety_note: Never open the oil filler cap while the compressor is under pressure.
+  - key: R23
+    machine: AC-01
+    date: 2026-06-17
+    symptom: S18
+    cause: C23
+    fix: F23
+    transcript_en: >-
+      Water coming in the air line to the machines. Auto drain valve on the tank was stuck with rust. Cleaned the auto drain
+      and told operators to open the manual drain once at the start of every shift.
+    safety_note: Open the drain slowly; water and air come out with force.
+  - key: R24
+    machine: AC-01
+    date: 2026-08-05
+    symptom: S19
+    cause: C24
+    fix: F24
+    transcript_en: >-
+      Safety valve kept popping. Pressure switch cut-out had drifted to 9 bar, the safety valve is set at 9 bar.
+      Reset the cut-out to 8 bar and confirmed cut-in at 6.5 bar. Pressure switch will be replaced if it drifts again.
+    safety_note: Never block, plug or tighten the safety valve to stop it from blowing.
+  - key: R25
+    machine: AC-01
+    date: 2026-09-10
+    symptom: S20
+    cause: C25
+    fix: F25
+    transcript_en: >-
+      Oil coming with the compressed air and oil consumption was high. Separator element had crossed 4000 hours and was saturated.
+      Replaced the separator element and cleaned the scavenge line orifice.
+    safety_note: Depressurise the separator tank fully before opening it.
+  - key: R26
+    machine: HP-07
+    date: 2026-09-24
+    symptom: S05
+    cause: C26
+    fix: F26
+    transcript_en: >-
+      Oil getting hot even with a clean cooler. When the press was idle the pump stayed at full pressure and the relief valve
+      was dumping oil all the time. The unloading solenoid coil was open. Replaced the coil, now the pump unloads when idle
+      and oil temperature dropped by 15 degrees.
+    safety_note: Lock out power before replacing solenoid coils.
