@@ -97,6 +97,13 @@ def ingest_document(document_id: str, job_id: str | None = None) -> None:
             quality_notes.append(f"Page {pno} is a scanned image with no text. It is not searchable.")
             chunks = [c for c in chunks if c["page"] != pno]
     if not chunks:
+        # keep the scanned-page notes visible even on failure
+        if quality_notes:
+            with db() as conn:
+                conn.execute(
+                    "update documents set quality_notes = %s where id = %s",
+                    ("\n".join(quality_notes), document_id),
+                )
         _fail(document_id, "No readable text found in the PDF.")
         return
 

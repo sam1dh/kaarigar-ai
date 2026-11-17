@@ -235,6 +235,24 @@ def import_rows(import_id: str, tenant_id: str, mapping: dict, job_id: str | Non
         ).fetchall()
     machine_map = {normalise_code(m[2]): m for m in machines}
 
+    # Same file re-imported (force=true): replace the rows of earlier imports with
+    # this file's hash, so history never doubles. Their chunks go too.
+    with db() as conn:
+        frow = conn.execute("select file_hash from log_imports where id = %s", (import_id,)).fetchone()
+    if frow and frow[0]:
+        with db() as conn:
+            old = conn.execute(
+                """select l.id from maintenance_logs l
+                   join log_imports i on i.id = l.import_id
+                   where l.tenant_id = %s and i.file_hash = %s and i.id <> %s""",
+                (tenant_id, frow[0], import_id),
+            ).fetchall()
+            for (old_log_id,) in old:
+                conn.execute("delete from chunks where source_type = 'log' and source_id = %s", (old_log_id,))
+                conn.execute("delete from maintenance_logs where id = %s", (old_log_id,))
+            if old:
+                logger.info("import %s: replaced %d rows from earlier imports of the same file", import_id, len(old))
+
     rows_ok = 0
     rows_skipped = 0
     skipped: list[dict] = []

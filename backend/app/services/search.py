@@ -41,6 +41,10 @@ GRAPH_LOGS = 5
 CANDIDATES = 20  # hydrated rows when the reranker is on
 MAX_PER_SOURCE = 2
 PREP_CACHE_TTL = 60  # seconds; glossary/machines change rarely
+# Cosine floor for the vector retriever: nonsense queries top out ~0.59 while the
+# weakest neighbours of real queries measure ~0.66+ (bge-small-en-v1.5). Below the
+# floor a result is noise, so the vector retriever skips it entirely.
+VEC_FLOOR = 0.62
 
 logger = logging.getLogger("kaarigar.search")
 
@@ -90,6 +94,7 @@ vec as (
     where c.tenant_id = %(tenant)s
       and (%(model)s::uuid is null or c.model_id = %(model)s)
       and c.embedding is not null
+      and 1 - (c.embedding <=> %(qvec)s) >= %(vecfloor)s
     order by c.embedding <=> %(qvec)s
     limit %(nvec)s
   ) c
@@ -274,7 +279,7 @@ def search(
 
     qx, glossary_used = knowledge.expand_terms(q, glossary)
     qvec = np.round(embeddings.embed_query(qx), 4)
-    use_rerank = reranker_mod.enabled(rerank) and reranker_mod.rerank_ready()
+    use_rerank = reranker_mod.enabled(rerank) and embeddings.rerank_ready()
 
     params = {
         "tenant": tenant_id,
@@ -295,6 +300,7 @@ def search(
         "nlogs": GRAPH_LOGS,
         "maxsrc": MAX_PER_SOURCE,
         "kfinal": CANDIDATES if use_rerank else k,
+        "vecfloor": VEC_FLOOR,
     }
     with db_read() as conn:
         rows = conn.execute(_SEARCH_SQL, params).fetchall()
@@ -366,7 +372,23 @@ def search(
         "results": results,
     }
     if debug:
+        ret_lists: dict[str, list] = {"vector": [], "keyword": [], "graph": []}
+        for c in candidates:
+            rm = c.get("ranks") or {}
+            base = {
+                "title": c["title"],
+                "source_type": c["source_type"],
+                "seed_key": (c.get("meta") or {}).get("seed_key"),
+            }
+            for dst in ("vector", "keyword", "graph"):
+                if rm.get(dst):
+                    ret_lists[dst].append({**base, "rank": int(rm[dst])})
+        for dst in ret_lists:
+            ret_lists[dst].sort(key=lambda x: x["rank"])
         out["debug"] = {
+            "vector": ret_lists["vector"],
+            "keyword": ret_lists["keyword"],
+            "graph": ret_lists["graph"],
             "symptoms_matched": [
                 {"name": s["name"], "sim": round(float(s["sim"]), 3)} for s in symptoms
             ],

@@ -90,7 +90,7 @@ def upload_document(
             (document_id, user.tenant_id, model_id, title.strip(), type, path, fhash, user.id),
         )
         if replace and dup:
-            conn.execute("update documents set status = 'failed' where id = %s", (dup[0],))
+            conn.execute("delete from chunks where source_type = 'manual' and source_id = %s", (dup[0],))
             conn.execute("delete from documents where id = %s", (dup[0],))
 
     job_id = jobs.create_job(user.tenant_id, "ingest_pdf", document_id)
@@ -235,9 +235,11 @@ def confirm_log_import(
     mapping = body.get("mapping")
     if not isinstance(mapping, dict):
         raise ApiError(422, "validation_error", "Send {mapping: {field: column}}.")
-    mapping = {f: mapping.get(f) for f in log_import._REQUIRED}
+    # validate required fields, but keep the full mapping — the import job also
+    # needs action / downtime_min / technician, and the closure below captures
+    # this exact dict.
     for f in log_import._REQUIRED:
-        if mapping[f] is None:
+        if mapping.get(f) is None:
             raise ApiError(422, "validation_error", f"'{f}' must be mapped to a column.")
 
     with db() as conn:

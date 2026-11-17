@@ -55,6 +55,13 @@ def fail_stale_jobs() -> None:
         )
         if cur.rowcount:
             logger.info("marked %s stale job(s) as failed", cur.rowcount)
+        # ...and documents left mid-ingest must not hang in 'parsing' forever.
+        cur = conn.execute(
+            "update documents set status = 'failed', error = 'server restarted' "
+            "where status = 'parsing'"
+        )
+        if cur.rowcount:
+            logger.info("marked %s parsing document(s) as failed", cur.rowcount)
 
 
 def run_job(job_id: str, fn: Callable[[], None]) -> None:

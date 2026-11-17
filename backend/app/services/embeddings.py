@@ -55,7 +55,10 @@ def _load_embed(model: str, cache_dir: str) -> None:
 
 def _load_rerank(model: str, cache_dir: str) -> None:
     try:
-        from fastembed import TextCrossEncoder
+        try:  # fastembed >= 1.x exports it at top level
+            from fastembed import TextCrossEncoder
+        except ImportError:  # 0.x keeps it in the rerank subpackage
+            from fastembed.rerank.cross_encoder import TextCrossEncoder
 
         with _state["lock"]:
             _state["rerank"] = TextCrossEncoder(model_name=model, cache_dir=cache_dir)

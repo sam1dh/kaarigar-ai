@@ -104,3 +104,33 @@ def test_chunk_indexes_are_ordered() -> None:
     ]
     chunks = chunking.chunk_manual(pages)
     assert [c["chunk_index"] for c in chunks] == list(range(len(chunks)))
+
+
+# ===== italic headings + demo footers (PDF-06 / PDF-08 fixes) =====
+def test_fully_italic_heading_keeps_text_and_siblings() -> None:
+    """'### **_6.1 Doing a thing_**' must not produce an empty section level."""
+    pages = [
+        _page(1, "## **6 Service procedures** \n\nintro paragraph.\n\n"
+                "### **_6.1 Setting the valve_** \n\nLoosen the gland.\n\n"
+                "### **_6.2 Replacing the seal_** \n\nPull the rod.\n"),
+    ]
+    chunks = chunking.chunk_manual(pages)
+    secs = {c["section"] for c in chunks}
+    assert "6 Service procedures > 6.1 Setting the valve" in secs
+    assert "6 Service procedures > 6.2 Replacing the seal" in secs  # sibling, not chained
+    assert not any(s.strip().endswith(">") for s in secs)            # no empty levels
+
+
+def test_demo_footer_marker_and_page_only_lines_removed() -> None:
+    """Marker lines (incl. OCR-merged ones) and lone 'Page N' lines never reach chunks."""
+    pages = [
+        _page(1, "Hydraulic press overview. Keep the ram area clear.\n\n"
+                 "AC-75 Service Manual — fictional manual for demo use only Page 1"),
+        _page(2, "Oil level check every shift.\n\nPage 2\n\n"
+                 "HPX-200 Service Manual — fictional manual for demo use only"),
+    ]
+    chunks = chunking.chunk_manual(pages)
+    for c in chunks:
+        low = c["text"].lower()
+        assert "fictional manual" not in low
+        assert not low.strip().startswith("page ")

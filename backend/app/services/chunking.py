@@ -23,6 +23,10 @@ _ITAL = re.compile(r"(?<!\w)_([^_]+)_(?!\w)")
 _WS = re.compile(r"[ \t]+")
 _PICTURE = re.compile(r"<!--\s*Start of picture text\s*-->(.*?)(?:<!--\s*End of picture text\s*-->|\Z)", re.S)
 _HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+_PAGE_ONLY = re.compile(r"^page #?$", re.IGNORECASE)
+# The demo manuals carry a literal footer marker; OCR may also merge it into a
+# content line, where the "repeated line" detector can't see it.
+_FOOTER_MARK = "fictional manual for demo use only"
 
 
 @dataclass
@@ -36,6 +40,29 @@ class Block:
 def _normalize(line: str) -> str:
     """Line shape for the repeated-footer detector: digits → '#', no bold/ws."""
     return _WS.sub(" ", _BOLD.sub("", line)).strip().translate(str.maketrans("0123456789", "##########"))
+
+
+def _strip_demo_footers(lines: list[str]) -> list[str]:
+    """Drop the demo footer marker and lone 'Page N' lines; cut merged footer tails.
+
+    A line whose footer segment starts in its first half is a pure footer line
+    and goes away entirely; otherwise the footer tail is truncated off a
+    content line. OCR'd single-page docs get the same treatment because
+    repetition-based detection needs >= 2 pages.
+    """
+    out = []
+    for ln in lines:
+        i = ln.lower().find(_FOOTER_MARK)
+        if i == -1:
+            if _PAGE_ONLY.match(ln.strip()):
+                continue
+            out.append(ln)
+            continue
+        prefix = ln[:i].rstrip(" -—·")
+        if len(prefix) <= len(ln) / 2 or not prefix.strip():
+            continue  # pure footer line
+        out.append(prefix)
+    return out
 
 
 def clean_pages(pages: list[dict]) -> list[dict]:
@@ -55,6 +82,11 @@ def clean_pages(pages: list[dict]) -> list[dict]:
         text = _BOLD.sub("", text)
         lines = [_WS.sub(" ", ln).strip() for ln in text.splitlines()]
         cleaned.append({"page": page_no, "lines": lines, "ocr": ocr})
+
+    # Footer marker / lone page numbers first (works for single-page and OCR-merged
+    # lines), then the generic repeated-line detector.
+    for c in cleaned:
+        c["lines"] = _strip_demo_footers(c["lines"])
 
     # Footers: remove lines that repeat on a strict majority of pages ("Page 2" etc).
     # Table lines are excluded: markdown tables repeated across a page break share
@@ -81,6 +113,7 @@ def split_blocks(cleaned: list[dict]) -> list[Block]:
     """2. Headings / paragraphs / tables, with a section path from headings."""
     blocks: list[Block] = []
     section: list[str] = []
+    subs: list[tuple[int, str]] = []  # (level, text) tail under the current level<=2 heading
     for c in cleaned:
         para: list[str] = []
         table: list[str] = []
@@ -108,11 +141,20 @@ def split_blocks(cleaned: list[dict]) -> list[Block]:
                 flush_para()
                 flush_table()
                 level = len(hm.group(1))
-                text = _ITAL.sub("", hm.group(2)).strip()  # _italics_ markers from md
+                raw = hm.group(2).strip()
+                text = _ITAL.sub("", raw).strip()
+                if not text:
+                    # a fully-italic heading ('### _6.1 Doing a thing_') must keep
+                    # its text — keep the italic content instead of an empty level
+                    text = _ITAL.sub(r"\1", raw).strip()
                 if level <= 2:
                     section[:] = [text]
+                    subs.clear()
                 else:
-                    section[:] = section[:1] + [" > ".join([*section[1:], text])]
+                    while subs and subs[-1][0] >= level:
+                        subs.pop()
+                    subs.append((level, text))
+                    section[:] = section[:1] + [t for _, t in subs]
                 blocks.append(Block("heading", text, page_no, list(section)))
             elif ln.lstrip().startswith("|"):
                 flush_para()

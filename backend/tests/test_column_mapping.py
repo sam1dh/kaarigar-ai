@@ -33,3 +33,45 @@ def test_case_insensitive_and_hindi() -> None:
     assert mapping["date"] == "तारीख"
     assert mapping["machine_code"] == "मशीन"
     assert mapping["fault"] == "समस्या"
+
+
+def test_llm_mapping_no_key_falls_back() -> None:
+    """No GROQ_API_KEY → llm_mapping returns None (caller uses rules)."""
+    from app.core.config import get_settings
+    from app.services import column_mapping as cm
+    s = get_settings()
+    old = s.groq_api_key
+    try:
+        s.groq_api_key = ""
+        assert cm.llm_mapping(["M/c No.", "Date", "Problem"], []) is None
+    finally:
+        s.groq_api_key = old
+
+
+def test_llm_mapping_bad_reply_falls_back() -> None:
+    """A Groq reply with unknown columns / missing required fields → None."""
+    from app.core.config import get_settings
+    from app.services import column_mapping as cm
+    s = get_settings()
+    old = s.groq_api_key
+    try:
+        s.groq_api_key = "test-key"
+        calls = []
+
+        class FakeResp:
+            status_code = 200
+            def json(self):
+                calls.append(1)
+                return {"choices": [{"message": {"content": '{"machine_code": "Nope", "date": null,'
+                                                  ' "fault": null, "action": null, "downtime_min": null,'
+                                                  ' "technician": null, "notes": ""}'}}]}
+
+        import httpx as _httpx
+        real_post = _httpx.post
+        _httpx.post = lambda *a, **k: FakeResp()
+        try:
+            assert cm.llm_mapping(["M/c No.", "Date", "Problem"], []) is None
+        finally:
+            _httpx.post = real_post
+    finally:
+        s.groq_api_key = old
