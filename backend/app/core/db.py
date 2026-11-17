@@ -40,7 +40,7 @@ def get_pool() -> ConnectionPool:
         _pool = ConnectionPool(
             _dsn(),
             min_size=1,
-            max_size=10,
+            max_size=3,  # Supabase free session pooler: keep the total (capture uses 2) small
             timeout=10,  # fail fast on checkout instead of hanging 30 s
             open=True,
             configure=_configure,

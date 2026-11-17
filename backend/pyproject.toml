@@ -20,8 +20,12 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "psycopg-pool>=3.2",
     "pgvector>=0.3",
-    "groq>=0.11",
+    "groq>=0.30",
     "pyyaml>=6.0",
+    # Phase 2: capture
+    "langgraph>=1.0,<2",
+    "langgraph-checkpoint-postgres>=3.0,<4",
+    "imageio-ffmpeg>=0.5",
 ]
 
 [dependency-groups]
@@ -37,6 +41,12 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "W"]
 ignore = ["E501", "B008"]  # B008: FastAPI Depends() in defaults is the intended pattern
+
+[tool.ruff.lint.per-file-ignores]
+# Phase 2 capture pack: provided code, kept byte-identical upstream.
+# B904 (raise-from inside except) is the pack's style; the error shape is right.
+"app/capture/*" = ["B904", "UP035", "UP017", "I001"]
+"tests/capture/*" = ["B904", "UP035", "UP017", "I001", "F401"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

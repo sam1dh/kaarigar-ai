@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Globe, LogOut, Search, Type } from "lucide-react";
+import { Link } from "react-router-dom";
+import MyNotes from "@/features/capture/MyNotes";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/toast";
 import LanguageSheet from "@/components/LanguageSheet";
 import TextSizeControl from "@/components/TextSizeControl";
 import { api } from "@/lib/api";
@@ -165,10 +166,9 @@ export default function TechHome() {
       ) : (
         <div className="overflow-hidden rounded-card border border-line bg-white">
           {filtered.map((m, i) => (
-            <button
+            <Link
               key={m.id}
-              type="button"
-              onClick={() => toast(t("login.comingSoon"))}
+              to={`/tech/machines/${encodeURIComponent(m.code)}`}
               className={`flex w-full items-center gap-4 px-4 py-4 text-left hover:bg-surface ${
                 i > 0 ? "border-t border-line" : ""
               }`}
@@ -185,9 +185,19 @@ export default function TechHome() {
                 </span>
               </span>
               <ChevronRight className="h-5 w-5 shrink-0 text-ink-faint" />
-            </button>
+            </Link>
           ))}
         </div>
+      )}
+
+      {/* Experts and supervisors can find their own recordings here. */}
+      {(profile?.role === "expert" || profile?.role === "supervisor") && (
+        <>
+          <p className="mb-3 mt-8 text-sm font-medium text-ink-muted">
+            {t("capture.myNotes.onThisMachine")}
+          </p>
+          <MyNotes limit={5} />
+        </>
       )}
 
       <LanguageSheet

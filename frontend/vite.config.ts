@@ -3,6 +3,10 @@ import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 import { VitePWA } from "vite-plugin-pwa";
 
+// Live reload through the https tunnel needs the HMR socket on 443/wss,
+// which would break plain http://localhost:5173. Only do it when asked.
+const tunnelDev = process.env.TUNNEL_DEV === "1";
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -16,9 +20,9 @@ export default defineConfig({
       includeAssets: ["favicon.svg"],
       // Serve the manifest + service worker in dev too, so the install
       // button works while testing on localhost / the Cloudflare tunnel.
+      // No service worker in dev — otherwise the phone caches old code.
       devOptions: {
-        enabled: true,
-        type: "module",
+        enabled: false,
       },
       manifest: {
         name: "Kaarigar",
@@ -41,12 +45,35 @@ export default defineConfig({
     }),
   ],
   server: {
-    host: true,
-    allowedHosts: [".trycloudflare.com"],
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: true,
+    allowedHosts: [
+      ".trycloudflare.com",
+      "app.kaarigar-ai.online",
+      "dev.kaarigar-ai.online",
+    ],
+    ...(tunnelDev ? { hmr: { clientPort: 443, protocol: "wss" as const } } : {}),
     fs: {
       // allow importing ../shared/languages.json from outside frontend/
       allow: [".."],
     },
+    proxy: {
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
+  preview: {
+    host: true,
+    port: 4173,
+    allowedHosts: [
+      ".trycloudflare.com",
+      "app.kaarigar-ai.online",
+      "dev.kaarigar-ai.online",
+    ],
     proxy: {
       "/api": {
         target: "http://localhost:8000",

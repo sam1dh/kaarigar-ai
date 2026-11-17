@@ -13,18 +13,27 @@ from __future__ import annotations
 import logging
 import time
 
+import httpx
 from fastapi import APIRouter, Depends
-from supabase import AuthApiError
 
 from app.core.auth import CurrentUser, get_current_user, load_profile_with_tenant
 from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.core.languages import is_enabled
-from app.core.supabase import admin_client, anon_client
+from app.core.supabase import admin_client
 from app.schemas import LanguageUpdate, PinLoginRequest, PinLoginResponse, ProfileOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger("kaarigar.auth")
+
+# One keep-alive client for password sign-in, process-wide. Reusing the TCP/TLS
+# connection removes ~200-400 ms of handshake from every PIN login. We call the
+# token endpoint directly (not supabase-py) because supabase-py stores the signed-in
+# session on its Client, and a shared client would leak sessions between users.
+_http = httpx.Client(
+    timeout=15.0,
+    limits=httpx.Limits(max_keepalive_connections=5, max_connections=10, keepalive_expiry=60.0),
+)
 
 # Simple in-memory rate limit: 5 failed tries per employee per 5 minutes.
 FAILED_TRIES_LIMIT = 5
@@ -69,31 +78,51 @@ def pin_login(body: PinLoginRequest) -> PinLoginResponse:
         raise ApiError(429, "too_many_attempts", "Too many tries. Ask your supervisor to help.")
 
     try:
-        auth = anon_client().auth.sign_in_with_password({"email": email, "password": body.pin})
-    except AuthApiError as exc:
+        t0 = time.perf_counter()
+        resp = _http.post(
+            f"{settings.supabase_url}/auth/v1/token",
+            params={"grant_type": "password"},
+            headers={
+                "apikey": settings.supabase_anon_key,
+                "Authorization": f"Bearer {settings.supabase_anon_key}",
+            },
+            json={"email": email, "password": body.pin},
+        )
+        t_auth = int((time.perf_counter() - t0) * 1000)
+        if resp.status_code >= 400:
+            raise ValueError(f"auth_status_{resp.status_code}")
+        session = resp.json()
+    except (httpx.HTTPError, ValueError) as exc:
         _record_failure(rl_key)
-        # Log only the exception class, never the attempted credentials.
+        # Log only the exception class/status, never the attempted credentials.
         logger.info("pin_login failed for %s: %s", rl_key, exc.__class__.__name__)
         raise ApiError(401, "invalid_login", "Wrong employee ID or PIN. Please try again.") from exc
 
-    session = auth.session
-    if session is None:  # pragma: no cover — password sign-in always returns a session
+    user_id = (session.get("user") or {}).get("id")
+    if not user_id:  # pragma: no cover — password sign-in always returns a user
         raise ApiError(401, "invalid_login", "Wrong employee ID or PIN. Please try again.")
 
     # The token was just issued by Supabase, so loading the profile by user id is safe.
-    user, tenant = load_profile_with_tenant(session.user.id)
+    t1 = time.perf_counter()
+    user, tenant = load_profile_with_tenant(user_id)
+    t_profile = int((time.perf_counter() - t1) * 1000)
+    total = int((time.perf_counter() - t0) * 1000)
+    logger.info(
+        "pin_login ok (%s): auth %d ms, profile %d ms, total %d ms",
+        plant_slug, t_auth, t_profile, total,
+    )
     return PinLoginResponse(
-        access_token=session.access_token,
-        refresh_token=session.refresh_token or "",
-        expires_in=session.expires_in or 3600,
+        access_token=session["access_token"],
+        refresh_token=session.get("refresh_token") or "",
+        expires_in=session.get("expires_in") or 3600,
         profile=_profile_out(user, tenant),
     )
 
 
 @router.get("/me", response_model=ProfileOut)
 def me(user: CurrentUser = Depends(get_current_user)) -> ProfileOut:
-    _, tenant = load_profile_with_tenant(user.id)
-    return _profile_out(user, tenant)
+    # get_current_user already fetched profile + tenant in one query.
+    return _profile_out(user, user.tenant or {})
 
 
 @router.patch("/me", response_model=ProfileOut)

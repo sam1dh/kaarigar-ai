@@ -15,6 +15,7 @@ frontend/dist/
 
 # Env & secrets
 .env
+.tunnel-token
 .env.*
 !.env.example
 frontend/.env

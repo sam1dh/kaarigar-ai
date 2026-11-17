@@ -5,8 +5,12 @@ import { homeForRole, useSessionStore } from "@/stores/session";
 import PhoneLogin from "@/features/auth/PhoneLogin";
 import WebLogin from "@/features/auth/WebLogin";
 import TechHome from "@/features/tech/TechHome";
+import MachineScreen from "@/features/capture/MachineScreen";
+import RecordScreen from "@/features/capture/RecordScreen";
+import NoteScreen from "@/features/capture/NoteScreen";
+import SentScreen from "@/features/capture/SentScreen";
 import ManagerLayout from "@/features/manager/ManagerLayout";
-import ManagerHome from "@/features/manager/ManagerHome";
+import ReviewQueue from "@/features/manager/review/ReviewQueue";
 import Placeholder from "@/features/manager/Placeholder";
 
 /** Full-screen splash while the initial session check runs. */
@@ -116,6 +120,38 @@ export default function Router() {
             </RequireRole>
           }
         />
+        <Route
+          path="/tech/machines/:code"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <MachineScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/machines/:code/record"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <RecordScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/records/:id"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <NoteScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/records/:id/sent"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <SentScreen />
+            </RequireRole>
+          }
+        />
 
         {/* Web dashboard */}
         <Route
@@ -126,7 +162,7 @@ export default function Router() {
             </RequireRole>
           }
         >
-          <Route index element={<ManagerHome />} />
+          <Route index element={<ReviewQueue />} />
           <Route
             path="escalations"
             element={<Placeholder phase="4" title="Escalations" />}

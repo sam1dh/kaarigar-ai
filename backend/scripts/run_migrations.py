@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import sys
 
-import psycopg2
+import psycopg
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -29,7 +29,7 @@ def main() -> None:
         print("DATABASE_URL not set")
         sys.exit(1)
 
-    conn = psycopg2.connect(url, sslmode="require")
+    conn = psycopg.connect(url, sslmode="require")
     conn.autocommit = True
     with conn.cursor() as cur:
         cur.execute(

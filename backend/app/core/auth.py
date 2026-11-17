@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 
 import jwt
@@ -25,6 +26,7 @@ class CurrentUser:
     role: str
     is_admin: bool
     language: str
+    tenant: dict | None = None  # loaded once with the profile (name, slug)
 
 
 # ---- JWKS (cached for _CACHE_TTL) ----
@@ -32,9 +34,11 @@ _jwk_client: jwt.PyJWKClient | None = None
 
 
 def _get_jwk_client(jwks_url: str) -> jwt.PyJWKClient:
+    """One client per process; the JWKS (token signing keys) is fetched once and
+    cached in memory (cache_keys=True, refreshed after _CACHE_TTL) — never
+    downloaded per request."""
     global _jwk_client
     if _jwk_client is None:
-        # PyJWKClient caches keys internally (cache_keys=True) and refreshes after `lifespan`.
         _jwk_client = jwt.PyJWKClient(jwks_url, cache_keys=True, lifespan=_CACHE_TTL)
     return _jwk_client
 
@@ -129,7 +133,7 @@ def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
 
 
 def get_current_user(request: Request) -> CurrentUser:
-    """Read Authorization: Bearer <token>, verify it, load the profile."""
+    """Read Authorization: Bearer <token>, verify it, load the profile (and tenant)."""
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         raise ApiError(401, "unauthorized", "Sign in to continue.")
@@ -138,11 +142,20 @@ def get_current_user(request: Request) -> CurrentUser:
         raise ApiError(401, "unauthorized", "Sign in to continue.")
 
     settings = request.app.state.settings
+    t0 = time.perf_counter()
     claims = _verify_token(token, settings)
+    t_verify = int((time.perf_counter() - t0) * 1000)
     user_id = claims.get("sub")
     if not user_id:
         raise ApiError(401, "invalid_token", "Session expired. Please sign in again.")
-    user = load_profile(user_id)
+    t1 = time.perf_counter()
+    user, tenant = load_profile_with_tenant(user_id)
+    t_profile = int((time.perf_counter() - t1) * 1000)
+    logger.info(
+        "auth ok: verify %d ms, profile %d ms, total %d ms",
+        t_verify, t_profile, t_verify + t_profile,
+    )
+    user.tenant = tenant
     request.state.user_id = user.id  # for the JSON access log
     return user
 

@@ -1,0 +1,66 @@
+# Extraction + AI-check test set for Phase 2 (text only, no audio, no Sarvam credits).
+# Run: python -m scripts.eval_capture            (~2 Groq calls per case, throttled)
+# Transcripts are written the way Saaras translate output tends to look: rough English, Hinglish words.
+#
+# Checks per case (all case-insensitive):
+#   symptom_has / cause_has / fix_has : at least one of the words must appear in that field
+#   null: fields that must be null (the technician didn't say them)
+#   safety: "present" -> safety_note not null; "absent" -> safety_note null
+#   check_flags_safety: true -> ai_check.safety_ok must be false (a needed safety step was not said)
+#   is_repair_note: expected boolean
+# Target: >= 85% of checks pass.
+
+cases:
+  - id: C01
+    machine: HP-07
+    transcript: >-
+      Sir HP-07 pressure was not coming, only 140 bar was showing. Somebody in night shift had opened the relief valve.
+      I first put the ram down on safety blocks and released the pressure, then I put the test gauge and set relief to
+      210 bar and tightened the lock nut. Now it is okay.
+    expect: {symptom_has: [pressure], cause_has: [relief], fix_has: [relief, "210"], safety: present, is_repair_note: true}
+
+  - id: C02
+    machine: HP-07
+    transcript: >-
+      The pump was making thak-thak sound. Oil level was low below the glass and the suction hose clamp was loose.
+      I filled oil 46 grade and tightened the clamp, ran the pump without load for five minutes. Sound is gone.
+    expect: {symptom_has: [noise, knock, sound], cause_has: [oil, suction, air, clamp], fix_has: [oil, clamp, tighten], is_repair_note: true}
+
+  - id: C03
+    machine: HP-02
+    transcript: >-
+      Oil is dripping from the ram rod. I changed the rod seal kit SK-200-R. The rod had small scratches so I polished
+      with 600 paper.
+    expect: {symptom_has: [leak, drip, oil], fix_has: [seal], check_flags_safety: true, is_repair_note: true}
+
+  - id: C04
+    machine: CNC-03
+    transcript: >-
+      Machine showing alarm 2001, spindle not starting. Door switch was bent so it was thinking door is open.
+      I straightened the switch and cleaned it. Spindle started.
+    expect: {symptom_has: [spindle, "2001"], cause_has: [door, switch], fix_has: [switch, align, straighten], is_repair_note: true}
+
+  - id: C05
+    machine: AC-01
+    transcript: >-
+      Compressor not giving full pressure, stuck at 6 bar. I changed the air filter. Now going up to 8.
+    expect: {symptom_has: [pressure], fix_has: [filter], null: [], is_repair_note: true}
+
+  - id: C06
+    machine: HP-07
+    transcript: >-
+      Ram was coming down very slow. I cleaned something in the tank.
+    expect: {symptom_has: [slow], null: [cause], safety: absent, is_repair_note: true}
+
+  - id: C07
+    machine: HP-07
+    transcript: >-
+      Hello hello is this recording? Okay I will call you after lunch, tell Suresh sir the meeting is at three.
+    expect: {is_repair_note: false}
+
+  - id: C08
+    machine: CNC-03
+    transcript: >-
+      In the morning first three jobs are coming 0.02 oversize, after that okay. So now we are running the warm up
+      program O9000 for fifteen minutes before the first job. Downtime was 20 minutes for checking.
+    expect: {symptom_has: [size, oversize, dimension], cause_has: [warm, thermal, temperature], fix_has: [warm], is_repair_note: true}

@@ -1,4 +1,4 @@
-// Kaarigar AI — database schema (migrations 0001_init.sql + 0002_phase1.sql)
+// Kaarigar AI — database schema (migrations 0001_init.sql + 0002_phase1.sql + 0003_phase2.sql)
 // Paste into https://dbdiagram.io to view.
 // Source of truth is supabase/migrations/*.sql. Update this file whenever a migration changes.
 // Status/type columns are text + CHECK in SQL; allowed values are listed in each note.
@@ -194,12 +194,23 @@ Table repair_records {
   reviewed_at timestamptz
   source text [not null, default: 'capture', note: 'capture | escalation | seed']
   created_at timestamptz [not null, default: `now()`]
+  language text [note: '0003: language the expert reads/speaks (Sarvam code)']
+  audio_seconds "numeric(6,1)" [note: '0003']
+  stage text [note: '0003: queued | transcribing | extracting | checking | translating | ready | failed']
+  error text [note: '0003: error code when stage = failed (no_speech, stt_failed, llm_failed, ...)']
+  fields_local jsonb [note: '0003: fields translated into `language` for the check screen']
+  submitted_at timestamptz [note: '0003: when the expert sent it to the supervisor']
+  edited_by_expert boolean [not null, default: false, note: '0003']
+  edited_by_reviewer boolean [not null, default: false, note: '0003']
 
   indexes {
     (tenant_id, symptom_id) [name: 'repair_records_symptom_idx', note: "0002: where status = 'approved'"]
+    (tenant_id, status, submitted_at) [name: 'repair_records_queue_idx', note: '0003: review queue']
+    (tenant_id, author_id, created_at) [name: 'repair_records_author_idx', note: '0003: My notes (created_at desc)']
     `(fields->>'seed_key')` [name: 'repair_records_seed_key_idx', note: '0002']
   }
-  Note: 'Expert knowledge (E sources). Only approved rows go into chunks.'
+  Note: '''Expert knowledge (E sources). Only approved rows go into chunks.
+  Capture flow: draft -> expert_review -> pending -> approved | rejected. LangGraph state lives in schema `langgraph` (not exposed to the Data API).'''
 }
 
 // ===================== Search =====================

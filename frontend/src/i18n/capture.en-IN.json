@@ -1,0 +1,155 @@
+{
+  "capture": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "status": {
+      "processing": "Working on it",
+      "draft": "Draft",
+      "expert_review": "Check needed",
+      "pending": "Waiting for approval",
+      "approved": "Approved",
+      "rejected": "Not approved",
+      "failed": "Needs attention"
+    },
+    "machine": {
+      "subtitle": "Machine",
+      "ask": "Ask a question",
+      "askSoon": "coming soon",
+      "record": "Record a repair"
+    },
+    "myNotes": {
+      "onThisMachine": "My notes on this machine",
+      "empty": "No notes yet.",
+      "untitled": "Repair note"
+    },
+    "record": {
+      "title": "Record a repair",
+      "promptTitle": "Speak in your own language. Say:",
+      "prompt1": "What was wrong with the machine",
+      "prompt2": "What caused it",
+      "prompt3": "How you fixed it, step by step",
+      "prompt4": "Any safety step you took",
+      "start": "Start recording",
+      "stop": "Stop recording",
+      "tapToStart": "Tap the gauge to start",
+      "tapToStop": "Tap again when you're done",
+      "listenBack": "Listen to your note",
+      "send": "Send",
+      "sending": "Sending…",
+      "again": "Record again",
+      "errors": {
+        "insecure": "Recording needs a secure (https) link. Open the app from the tunnel link.",
+        "unsupported": "This browser can't record audio. Use Chrome.",
+        "denied": "Microphone access was blocked. Allow the microphone in the browser settings and try again.",
+        "no_mic": "No microphone found on this device.",
+        "failed": "Couldn't start the microphone. Try again."
+      }
+    },
+    "note": {
+      "title": "Your note",
+      "notFound": "This note doesn't exist or isn't yours.",
+      "working": "Working on your note",
+      "steps": {
+        "transcribing": "Listening to your note",
+        "extracting": "Writing it down",
+        "checking": "Checking it with the manual",
+        "translating": "Putting it in your language"
+      },
+      "canLeave": "You can leave this screen. Your note will be ready in My notes.",
+      "tryAgain": "Try again",
+      "statusTitle": {
+        "draft": "Draft",
+        "expert_review": "Check needed",
+        "pending": "Sent to your supervisor",
+        "approved": "Approved and saved",
+        "rejected": "Not approved"
+      },
+      "supervisor": "Supervisor",
+      "approvedText": "Other technicians can now find this repair when they ask."
+    },
+    "check": {
+      "title": "AI check",
+      "intro": "Check what we wrote down. Fix anything that's wrong, then send it to your supervisor.",
+      "allGood": "Looks complete.",
+      "safetyMissing": "No safety step was mentioned. Add one if this job needs it.",
+      "showEnglish": "Show in English",
+      "showMine": "Show in my language",
+      "toggleLocked": "Send or undo your changes first",
+      "whatYouSaid": "What you said",
+      "send": "Send to supervisor",
+      "sending": "Sending…",
+      "discard": "Delete this note",
+      "discardConfirm": "Delete this note and its recording? This can't be undone.",
+      "discardYes": "Delete"
+    },
+    "fields": {
+      "symptom": "Problem",
+      "cause": "Cause",
+      "fix": "Fix",
+      "steps": "Steps",
+      "parts": "Parts",
+      "tools": "Tools",
+      "safety_note": "Safety step",
+      "downtime_min": "Downtime",
+      "general": "Overall",
+      "notSaid": "not said",
+      "edited": "edited",
+      "placeholder": "Type here",
+      "safetyPlaceholder": "e.g. Lower the ram onto safety blocks first",
+      "noSafety": "No safety step mentioned",
+      "addStep": "Add a step",
+      "removeStep": "Remove step"
+    },
+    "sent": {
+      "title": "Sent",
+      "next": "Your supervisor will check it. Once approved, other technicians can find this repair.",
+      "another": "Record another repair",
+      "backToMachine": "Back to machine"
+    },
+    "errors": {
+      "no_speech": "We couldn't hear a repair note. Record again a little closer to the phone.",
+      "too_short": "The recording is too short. Describe the repair in a few sentences.",
+      "too_long": "The recording is too long. Keep it under 3 minutes.",
+      "bad_audio": "This recording couldn't be read. Please record again.",
+      "stt_failed": "Speech service is busy. Tap Try again in a minute.",
+      "llm_failed": "The AI helper is busy. Tap Try again in a minute.",
+      "server_restarted": "The server restarted while working on your note. Tap Try again.",
+      "internal": "Something went wrong. Try again.",
+      "upload_failed": "Couldn't send the recording. Check your connection and try again.",
+      "storage_failed": "Couldn't save the recording. Try again.",
+      "audio_too_big": "The recording is too large. Keep it under 3 minutes.",
+      "unsupported_audio": "This recording format isn't supported. Use Chrome.",
+      "audio_empty": "The recording is empty. Record again.",
+      "machine_not_found": "This machine wasn't found.",
+      "not_allowed": "Only experts and supervisors can record repairs.",
+      "not_editable": "This note can't be changed now.",
+      "not_deletable": "Notes sent to the supervisor can't be deleted.",
+      "still_processing": "Wait until the note has been processed.",
+      "record_again": "This note can't be fixed by retrying. Please record again.",
+      "network": "No connection. Check your internet and try again."
+    }
+  },
+  "review": {
+    "title": "Review queue",
+    "waiting_one": "{{count}} waiting",
+    "waiting_other": "{{count}} waiting",
+    "empty": "Nothing waiting yet. Approved repairs will show up here.",
+    "safety": "Safety",
+    "aiCheck": "AI check",
+    "record": "Repair record",
+    "transcript": "Transcript (English)",
+    "approve": "Approve",
+    "approveEdited": "Save changes and approve",
+    "reject": "Send back",
+    "reasonLabel": "Why are you sending it back?",
+    "reasonPlaceholder": "e.g. The cause isn't clear. Please record again and say what you found.",
+    "sendBack": "Send back to expert",
+    "ownRecord": "You recorded this note, so another supervisor needs to review it.",
+    "errors": {
+      "own_record": "You can't review your own record.",
+      "not_pending": "This record was already reviewed.",
+      "incomplete": "Add at least the problem and the fix before approving.",
+      "network": "No connection. Try again."
+    }
+  }
+}

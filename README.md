@@ -2,7 +2,7 @@
 
 Voice-first repair copilot for Indian shop floors: technicians scan a machine QR and ask for repair help by voice; supervisors review, approve and answer escalations. Techthon 2026 — **Team Commit & Conquer**.
 
-**Phase 0 (this repo state):** foundations only — Supabase schema, PIN/email login, roles, routing, empty screens. No AI, no voice, no search yet.
+**Phase 2 (this repo state):** voice repair capture — experts record a repair in their own language, check the AI note, and a supervisor approves it into the searchable knowledge base.
 
 ## Stack
 
@@ -57,14 +57,41 @@ cd frontend && npm install && npm run dev
 
 Dev proxy: `/api` on :5173 forwards to the backend on :8000.
 
-## Test on a real phone
+## Phone testing
 
-```bash
-cloudflared tunnel --url http://localhost:5173
-```
+Browsers only allow the microphone on `https://` or `localhost`, so use the
+Cloudflare named tunnel. It serves two addresses:
 
-Open the printed `*.trycloudflare.com` URL on your phone → sign in as **SH-0412 / 482913**.
-In Chrome you can also *Install app* — the PWA is named **Kaarigar**.
+| Address | Serves | Start |
+|---|---|---|
+| `https://dev.kaarigar-ai.online` | Vite dev server on `:5173` (live reload while coding) | `npm run dev:phone` + tunnel |
+| `https://app.kaarigar-ai.online` | built preview on `:4173` (PWA / demo) | `npm run phone` + tunnel |
+
+1. Start the backend on `:8000` (`cd backend && uvicorn app.main:app --reload`).
+2. Start one frontend (only one Vite server on `:5173`):
+   ```bash
+   cd frontend
+   npm run dev:phone   # live while coding
+   # or:
+   npm run phone       # built app, for demos / installing the PWA
+   ```
+3. Start the named tunnel (needs `.tunnel-token` in the repo root — never commit it):
+   ```bash
+   cd frontend
+   npm run tunnel
+   ```
+
+Open **https://dev.kaarigar-ai.online** on your phone while coding: saving a
+file updates the phone within a second or two. Use **https://app.kaarigar-ai.online**
+for the built app and *Install app* (the PWA is named **Kaarigar**).
+Sign in as **SH-0412 / 482913** (technician) or **SH-0107 / 261847** (expert).
+
+- `dev:` reloads through the tunnel via `TUNNEL_DEV=1` (HMR on `wss://…:443`).
+  Plain `npm run dev` keeps normal HMR on `http://localhost:5173`.
+- `app:` rebuild after code changes: rerun `npm run phone` (the preview serves
+  the built `dist/`, not live source).
+- If it can't connect on college Wi-Fi, add `--protocol http2` to the
+  `cloudflared` command (campus networks often block the UDP the tunnel uses).
 
 ## Demo logins (after seeding)
 

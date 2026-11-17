@@ -10,6 +10,9 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.capture.router_capture import router as capture_router
+from app.capture.router_review import router as review_router
+from app.capture.runner import init_capture, shutdown_capture
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
 from app.routers import admin, auth, manager, tech
@@ -72,6 +75,8 @@ app.include_router(auth.router)
 app.include_router(tech.router)
 app.include_router(manager.router)
 app.include_router(admin.router)
+app.include_router(capture_router)
+app.include_router(review_router)
 
 
 @app.on_event("startup")
@@ -84,9 +89,15 @@ def startup() -> None:
         jobs.fail_stale_jobs()
         embeddings.start_loading()
 
+    # Phase 2: capture graph (checkpoints in the `langgraph` schema)
+    if settings.database_url:
+        init_capture()
+
 
 @app.on_event("shutdown")
 def shutdown() -> None:
+    # Stop background capture runs before closing their checkpoint pool.
+    shutdown_capture()
     if settings.database_url:
         from app.core.db import close_pool
 
