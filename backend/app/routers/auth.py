@@ -16,7 +16,14 @@ import time
 import httpx
 from fastapi import APIRouter, Depends
 
-from app.core.auth import CurrentUser, get_current_user, load_profile_with_tenant
+from app.core.auth import (
+    CurrentUser,
+    cache_profile,
+    get_current_user,
+    load_profile_with_tenant,
+    preload_profiles,
+    warm_jwks,
+)
 from app.core.config import get_settings
 from app.core.errors import ApiError
 from app.core.languages import is_enabled
@@ -132,5 +139,35 @@ def update_me(body: LanguageUpdate, user: CurrentUser = Depends(get_current_user
         raise ApiError(422, "unsupported_language", "This language isn't available yet.")
     admin_client().table("users").update({"language": body.language}).eq("id", user.id).execute()
     user.language = body.language
-    _, tenant = load_profile_with_tenant(user.id)
+    tenant = user.tenant or {}
+    # Keep the hot cache in sync so the next /auth/me does not re-query Supabase.
+    cache_profile(user, tenant)
     return _profile_out(user, tenant)
+
+
+def warm_connections() -> None:
+    """Open the Supabase TLS/keep-alive connections at startup.
+
+    The first PIN login on a cold process otherwise pays for two TLS handshakes
+    (Auth and PostgREST) on top of bcrypt. Warming both in the background removes
+    that cost from the user's first login without delaying readiness.
+    """
+    settings = get_settings()
+    if not settings.supabase_url:
+        return
+    try:
+        _http.get(
+            f"{settings.supabase_url}/auth/v1/health",
+            headers={"apikey": settings.supabase_anon_key},
+            timeout=5.0,
+        )
+    except Exception:  # noqa: BLE001 - best effort, never block startup
+        logger.debug("auth connection prewarm skipped", exc_info=True)
+    try:
+        warm_jwks(settings)
+    except Exception:  # noqa: BLE001
+        logger.debug("jwks prewarm skipped", exc_info=True)
+    try:
+        preload_profiles()
+    except Exception:  # noqa: BLE001
+        logger.debug("profile preload skipped", exc_info=True)

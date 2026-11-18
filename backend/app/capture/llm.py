@@ -65,6 +65,12 @@ class GroqLLM:
                 continue  # same attempt again
             except groq.BadRequestError:
                 log.info("groq 400 with strict=%s model=%s, trying next mode", strict, model)
+            except (groq.AuthenticationError, groq.PermissionDeniedError, groq.NotFoundError) as e:
+                # A wrong/revoked key or a removed model is a configuration problem, not a
+                # transcript problem. Surface it as the friendly "AI helper is busy" error
+                # (ROB-03) instead of letting it bubble up as a generic `internal` failure.
+                log.warning("groq rejected request model=%s: %s", model, type(e).__name__)
+                raise CaptureError("llm_failed", USER_MESSAGES["llm_failed"]) from e
             except ValidationError:
                 log.info("groq reply failed validation strict=%s model=%s", strict, model)
             except (groq.APIConnectionError, groq.APITimeoutError, groq.InternalServerError) as e:

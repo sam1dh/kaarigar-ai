@@ -8,12 +8,17 @@ Hinglish words and numbers said in words.
 Rules:
 - Use ONLY what the technician said. Never invent causes, parts, values or safety steps.
 - symptom: what was wrong, as a short label (3-8 words), e.g. "pressure not building".
-- cause: why it happened, short label (3-10 words). null if not said.
+- cause: why it happened, short label (3-10 words). null if not said. If the fix makes the cause
+  unambiguous, state that implied cause: a warm-up program before the first job means the cause is
+  "machine cold / thermal growth"; cleaning a cooler after overheating means "blocked cooler".
+  Otherwise null.
 - fix: what was done to fix it, short label (3-10 words). null if not said.
 - steps: the repair steps in order, each one short sentence. Empty list if none.
 - parts: parts replaced or used, with part number and quantity only if said.
 - tools: special tools or instruments mentioned (test gauge, dial indicator...).
-- safety_note: any safety precaution the technician mentioned, as one sentence. null if none.
+- safety_note: any safety precaution the technician mentioned, as one sentence. This includes putting
+  the ram on blocks, releasing stored pressure, lockout/tagout, isolating power, goggles, gloves or
+  barriers — record it here even when the same action also appears in the steps. null if none.
 - downtime_min: total downtime in minutes only if said, else null.
 - missing: which of symptom, cause, fix, steps, safety_note were NOT said.
 - is_repair_note: false if this is not about fixing a machine (chit-chat, silence, a question).

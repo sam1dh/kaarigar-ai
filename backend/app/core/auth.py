@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import jwt
 from fastapi import Depends, Request
@@ -15,6 +16,20 @@ from app.core.supabase import admin_client
 logger = logging.getLogger("kaarigar.auth")
 
 _CACHE_TTL = 300  # seconds
+
+# Small profile cache. Every authenticated request otherwise costs a PostgREST
+# round-trip (~150-225 ms from the campus network). The profile only changes when
+# the user edits their language or an admin edits the user, so a 5 min cache keeps
+# `/auth/me` fast; PATCH /auth/me refreshes the entry immediately. Keyed by auth user id.
+_PROFILE_TTL = 300.0
+_profile_cache: dict[str, tuple[float, CurrentUser, dict]] = {}
+_profile_lock = threading.Lock()
+
+
+def cache_profile(user: CurrentUser, tenant: dict) -> None:
+    """Remember a freshly loaded profile (called by login and PATCH /auth/me)."""
+    with _profile_lock:
+        _profile_cache[user.id] = (time.time() + _PROFILE_TTL, replace(user), dict(tenant))
 
 
 @dataclass
@@ -41,6 +56,15 @@ def _get_jwk_client(jwks_url: str) -> jwt.PyJWKClient:
     if _jwk_client is None:
         _jwk_client = jwt.PyJWKClient(jwks_url, cache_keys=True, lifespan=_CACHE_TTL)
     return _jwk_client
+
+
+def warm_jwks(settings) -> None:
+    """Fetch and cache the signing keys so the first authenticated request does not."""
+    if settings.supabase_jwt_secret:
+        return
+    jwks_url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+    _get_jwk_client(jwks_url).fetch_data()
+    logger.info("jwks preloaded")
 
 
 def _verify_token(token: str, settings) -> dict:
@@ -100,8 +124,55 @@ def load_profile(user_id: str) -> CurrentUser:
     )
 
 
+def preload_profiles(limit: int = 5000) -> int:
+    """Warm the profile cache with every user in one query.
+
+    The first login on a cold process otherwise waits ~0.5-0.7 s for its profile
+    row (PostgREST/TLS warmup). This app has a small user table, so loading it
+    once at startup turns the first PIN login's profile step into a cache hit.
+    """
+    rows = (
+        admin_client()
+        .table("users")
+        .select(
+            "id, tenant_id, name, employee_id, role, is_admin, language, tenant:tenants(id, name, slug)"
+        )
+        .limit(limit)
+        .execute()
+    )
+    loaded = 0
+    for d in rows.data or []:
+        tenant_raw = d.get("tenant") or {}
+        if not tenant_raw:
+            continue
+        user = CurrentUser(
+            id=str(d["id"]),
+            tenant_id=str(d["tenant_id"]),
+            name=d["name"],
+            employee_id=d.get("employee_id"),
+            role=d["role"],
+            is_admin=bool(d["is_admin"]),
+            language=d["language"],
+        )
+        tenant = {"id": str(tenant_raw["id"]), "name": tenant_raw["name"], "slug": tenant_raw["slug"]}
+        cache_profile(user, tenant)
+        loaded += 1
+    logger.info("profile cache preloaded: %d users", loaded)
+    return loaded
+
+
 def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
-    """Profile + tenant in a single REST call (PostgREST embeds tenants via the FK)."""
+    """Profile + tenant in a single REST call (PostgREST embeds tenants via the FK).
+
+    A short-lived cache avoids a network round-trip on every authenticated request
+    and makes the profile loaded during PIN login immediately reusable by /auth/me.
+    """
+    now = time.time()
+    with _profile_lock:
+        hit = _profile_cache.get(user_id)
+        if hit and hit[0] > now:
+            return replace(hit[1]), dict(hit[2])
+
     row = (
         admin_client()
         .table("users")
@@ -129,6 +200,7 @@ def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
         language=d["language"],
     )
     tenant = {"id": str(tenant_raw["id"]), "name": tenant_raw["name"], "slug": tenant_raw["slug"]}
+    cache_profile(user, tenant)
     return user, tenant
 
 

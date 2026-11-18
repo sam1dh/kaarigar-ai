@@ -80,6 +80,14 @@ def test_rate_limit_waits_once_then_succeeds():
     assert comp.kwargs[1]["response_format"]["json_schema"]["strict"] is True   # same mode retried
 
 
+def test_auth_error_maps_to_friendly_llm_failed():
+    llm, comp = llm_with([_http_err(groq.AuthenticationError, 401)])
+    with pytest.raises(CaptureError) as e:
+        call(llm)
+    assert e.value.code == "llm_failed"
+    assert len(comp.kwargs) == 1  # no pointless strict/best-effort retry with a bad key
+
+
 def test_rate_limit_twice_gives_up():
     llm, _ = llm_with([_http_err(groq.RateLimitError, 429), _http_err(groq.RateLimitError, 429)])
     with pytest.raises(CaptureError):

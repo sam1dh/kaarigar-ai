@@ -52,8 +52,10 @@ export async function api<T = unknown>(
       /* non-JSON error body (e.g. proxy 500 when the backend is down) */
     }
     // 5xx means the service itself failed — never tell the user their
-    // credentials were wrong (test case PL-09).
-    if (res.status >= 500) {
+    // credentials were wrong (test case PL-09). Keep a specific backend code
+    // such as `llm_failed` or `stt_failed` so the screen can show the friendly
+    // "AI helper is busy" message; only fall back when no code was returned.
+    if (res.status >= 500 && code === "request_failed") {
       code = "server_error";
       message = "Can't reach the service. Please try again.";
     }

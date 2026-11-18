@@ -93,6 +93,13 @@ def startup() -> None:
     if settings.database_url:
         init_capture()
 
+    # Warm Supabase TLS/keep-alive connections and the profile cache so the first
+    # PIN login does not pay for two handshakes plus a profile round-trip. This
+    # runs before readiness, which is fine: startup already waits on the DB.
+    from app.routers.auth import warm_connections
+
+    warm_connections()
+
 
 @app.on_event("shutdown")
 def shutdown() -> None:
