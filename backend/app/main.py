@@ -10,11 +10,15 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.assist.router_assist import router as assist_router
+from app.assist.router_escalations import expert_router, manager_router as escalations_router
+from app.assist.service import init_assist, shutdown_assist
 from app.capture.router_capture import router as capture_router
 from app.capture.router_review import router as review_router
 from app.capture.runner import init_capture, shutdown_capture
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
+from app.manage.routers import manage_routers
 from app.routers import admin, auth, manager, tech
 
 app = FastAPI(title="Kaarigar AI", version="0.1.0")
@@ -77,6 +81,13 @@ app.include_router(manager.router)
 app.include_router(admin.router)
 app.include_router(capture_router)
 app.include_router(review_router)
+app.include_router(assist_router)
+app.include_router(expert_router)
+app.include_router(escalations_router)
+
+# Phase 4: manager app (W3–W8)
+for _r in manage_routers:
+    app.include_router(_r)
 
 
 @app.on_event("startup")
@@ -92,6 +103,8 @@ def startup() -> None:
     # Phase 2: capture graph (checkpoints in the `langgraph` schema)
     if settings.database_url:
         init_capture()
+        # Phase 3: assist workers (marks questions cut off by a restart as failed)
+        init_assist()
 
     # Warm Supabase TLS/keep-alive connections and the profile cache so the first
     # PIN login does not pay for two handshakes plus a profile round-trip. This
@@ -103,7 +116,8 @@ def startup() -> None:
 
 @app.on_event("shutdown")
 def shutdown() -> None:
-    # Stop background capture runs before closing their checkpoint pool.
+    # Stop assist workers, then capture runs before closing their checkpoint pool.
+    shutdown_assist()
     shutdown_capture()
     if settings.database_url:
         from app.core.db import close_pool
