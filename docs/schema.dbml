@@ -1,4 +1,4 @@
-// Kaarigar AI — database schema (migrations 0001_init.sql + 0002_phase1.sql + 0003_phase2.sql)
+// Kaarigar AI — database schema (migrations 0001_init.sql + 0002_phase1.sql + 0003_phase2.sql + 0004_phase3.sql + 0005_phase4.sql)
 // Paste into https://dbdiagram.io to view.
 // Source of truth is supabase/migrations/*.sql. Update this file whenever a migration changes.
 // Status/type columns are text + CHECK in SQL; allowed values are listed in each note.
@@ -42,6 +42,8 @@ Table users {
   is_admin boolean [not null, default: false, note: 'Shows the Setup tab in Manager web']
   language text [not null, default: 'hi-IN', note: 'Sarvam code of an enabled language in shared/languages.json: en-IN hi-IN pa-IN mr-IN gu-IN bn-IN od-IN ta-IN te-IN kn-IN ml-IN. Checked by the backend, not a DB constraint.']
   created_at timestamptz [not null, default: `now()`]
+  deactivated_at timestamptz [note: '0005: set = cannot sign in (Supabase Auth ban). Never deleted, so their notes keep the author.']
+  created_by uuid [note: '0005: admin who added this person (W8)']
 
   indexes {
     (tenant_id, employee_id) [unique]
@@ -64,11 +66,14 @@ Table machines {
   code text [not null, note: 'HP-07']
   name text [note: 'Hydraulic press']
   line text [note: 'Line 2']
-  qr_token text [not null, unique, default: `encode(gen_random_bytes(12), 'hex')`, note: 'Printed on the machine QR sticker']
+  qr_token text [not null, unique, default: `encode(gen_random_bytes(12), 'hex')`, note: 'Printed on the machine QR sticker. "New QR" (W7) replaces it; the old sticker stops working.']
   created_at timestamptz [not null, default: `now()`]
+  archived_at timestamptz [note: '0005: off the floor. Hidden from technicians; history and records kept.']
+  sticker_printed_at timestamptz [note: '0005: last time its QR sticker was marked printed; null after New QR']
 
   indexes {
     (tenant_id, code) [unique]
+    (tenant_id) [name: 'machines_active_idx', note: '0005: where archived_at is null']
   }
 }
 
@@ -202,15 +207,21 @@ Table repair_records {
   submitted_at timestamptz [note: '0003: when the expert sent it to the supervisor']
   edited_by_expert boolean [not null, default: false, note: '0003']
   edited_by_reviewer boolean [not null, default: false, note: '0003']
+  escalation_id uuid [note: '0004: set when this record is an expert\'s voice reply to an escalation (source = escalation)']
+  archived_at timestamptz [note: '0005: archived from the knowledge base (W6). Its search chunk is deleted; restore rebuilds it.']
+  archived_by uuid
 
   indexes {
     (tenant_id, symptom_id) [name: 'repair_records_symptom_idx', note: "0002: where status = 'approved'"]
     (tenant_id, status, submitted_at) [name: 'repair_records_queue_idx', note: '0003: review queue']
     (tenant_id, author_id, created_at) [name: 'repair_records_author_idx', note: '0003: My notes (created_at desc)']
     `(fields->>'seed_key')` [name: 'repair_records_seed_key_idx', note: '0002']
+    escalation_id [name: 'repair_records_escalation_idx', note: '0004: where escalation_id is not null']
   }
   Note: '''Expert knowledge (E sources). Only approved rows go into chunks.
-  Capture flow: draft -> expert_review -> pending -> approved | rejected. LangGraph state lives in schema `langgraph` (not exposed to the Data API).'''
+  Capture flow: draft -> expert_review -> pending -> approved | rejected. LangGraph state lives in schema `langgraph` (not exposed to the Data API).
+  0004 trigger repair_records_escalation_answered: when a record with escalation_id reaches pending/approved, its escalation becomes answered.
+  0004: added to the supabase_realtime publication (review-queue badge updates live).'''
 }
 
 // ===================== Search =====================
@@ -248,15 +259,30 @@ Table queries {
   tenant_id uuid [not null]
   user_id uuid [not null]
   machine_id uuid
-  question_original text
-  question_en text
-  language text [note: 'Language the question was asked in (Sarvam code)']
-  answer text
-  confidence real [note: 'Below 0.5 -> escalate']
-  citations jsonb
+  question_original text [note: 'In the technician\'s own words (typed, or Sarvam mode=codemix)']
+  question_en text [note: 'English used for search']
+  language text [note: 'Technician\'s language (Sarvam code); the answer is written in it']
+  answer text [note: 'English copy of the answer (for managers / escalations)']
+  confidence real [note: '0..1; below ESCALATE_BELOW (0.5) the app suggests asking an expert']
+  citations jsonb [note: '[{ref, source_type, source_id, seed_key}] of the sources the answer used']
   escalated boolean [not null, default: false]
   latency_ms int
   created_at timestamptz [not null, default: `now()`]
+  status text [not null, default: 'answered', note: '0004: answering | answered | no_answer | failed | cancelled']
+  answer_local text [note: '0004: answer as shown/heard, in the technician\'s language (line format SAFETY:/1./CHECK: with [E1] refs)']
+  answer_parts jsonb [note: '0004: parsed {no_answer, safety[], steps[{n,text,refs}], check, refs_used[]}']
+  sources jsonb [not null, default: `'[]'::jsonb`, note: '0004: all sources shown [{ref, label, source_type, source_id, title, page, snippet, ...}]']
+  input_mode text [note: '0004: voice | text']
+  audio_path text [note: '0004: question recording in the audio bucket']
+  audio_seconds "numeric(5,1)" [note: '0004']
+  error text [note: '0004: error code when status = failed']
+  model text [note: '0004: Groq model that wrote the answer']
+  first_token_ms int [note: '0004: time until the first word appeared']
+
+  indexes {
+    (tenant_id, user_id, created_at) [name: 'queries_user_idx', note: '0004 (created_at desc)']
+    (tenant_id, machine_id, created_at) [name: 'queries_machine_idx', note: '0004 (created_at desc)']
+  }
 }
 
 Table feedback {
@@ -266,6 +292,10 @@ Table feedback {
   user_id uuid [not null]
   outcome text [not null, note: 'fixed | not_fixed | call_supervisor']
   created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (query_id, user_id) [unique, name: 'feedback_query_user_idx', note: '0004: one answer per person, can be changed']
+  }
 }
 
 Table escalations {
@@ -273,13 +303,43 @@ Table escalations {
   tenant_id uuid [not null]
   query_id uuid [not null]
   assigned_to uuid
-  status text [not null, default: 'open', note: 'open | answered']
-  reply_text text
+  status text [not null, default: 'open', note: '0004: open | answered | closed']
+  reply_text text [note: 'Quick text reply from the expert']
   reply_audio_path text
-  new_record_id uuid [note: 'Repair record created from the reply']
+  new_record_id uuid [note: 'Repair record created from the voice reply (set by the 0004 trigger)']
   created_at timestamptz [not null, default: `now()`]
   answered_at timestamptz
-  Note: 'Added to supabase_realtime publication'
+  asked_by uuid [note: '0004']
+  machine_id uuid [note: '0004']
+  note text [note: '0004: what the technician already tried']
+  assigned_at timestamptz [note: '0004']
+  replied_by uuid [note: '0004']
+  reply_local jsonb [note: '0004: reply translated for the asker (cache) {language, record_id, fields, text}']
+  closed_at timestamptz [note: '0004']
+  close_reason text [note: '0004: fixed_by_technician | not_needed']
+
+  indexes {
+    query_id [unique, name: 'escalations_query_idx', note: '0004: one escalation per question']
+    (tenant_id, status, created_at) [name: 'escalations_queue_idx', note: '0004']
+    (tenant_id, assigned_to, status) [name: 'escalations_assignee_idx', note: '0004']
+  }
+  Note: 'In the supabase_realtime publication (badges and replies update live)'
+}
+
+Table admin_audit {
+  id uuid [pk, default: `gen_random_uuid()`]
+  tenant_id uuid [not null]
+  actor_id uuid [note: 'admin who did it']
+  action text [not null, note: 'person_added | person_updated | pin_reset | password_reset | person_deactivated | person_reactivated | machine_added | machine_updated | machine_archived | machine_restored | qr_renewed | stickers_printed | record_archived | record_restored']
+  target_type text [not null, note: 'user | machine | repair_record']
+  target_id uuid
+  detail jsonb [note: 'what changed. Never a PIN or password.']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (tenant_id, created_at) [name: 'admin_audit_tenant_idx']
+  }
+  Note: '0005. RLS: same-tenant read. Written only by the backend.'
 }
 
 Table jobs {
@@ -315,6 +375,10 @@ Ref: queries.tenant_id > tenants.id
 Ref: feedback.tenant_id > tenants.id
 Ref: escalations.tenant_id > tenants.id
 Ref: jobs.tenant_id > tenants.id
+Ref: admin_audit.tenant_id > tenants.id
+Ref: admin_audit.actor_id > users.id
+Ref: users.created_by > users.id
+Ref: repair_records.archived_by > users.id
 
 // machines
 Ref: machines.model_id > machine_models.id
@@ -346,6 +410,10 @@ Ref: feedback.user_id > users.id
 Ref: escalations.query_id > queries.id
 Ref: escalations.assigned_to > users.id
 Ref: escalations.new_record_id > repair_records.id
+Ref: escalations.asked_by > users.id
+Ref: escalations.machine_id > machines.id
+Ref: escalations.replied_by > users.id
+Ref: repair_records.escalation_id > escalations.id [delete: set null]
 
 // ===================== Groups (colours in dbdiagram) =====================
 
@@ -376,4 +444,5 @@ TableGroup search_and_activity [color: #B0412C] {
   feedback
   escalations
   jobs
+  admin_audit
 }

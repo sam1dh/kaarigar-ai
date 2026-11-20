@@ -1,0 +1,278 @@
+{
+  "assist": {
+    "close": "Close",
+    "machine": {
+      "ask": "Ask a question",
+      "askHint": "Say what's wrong. Kaarigar answers from this plant's repairs and manuals."
+    },
+    "home": {
+      "askAny": "Ask about any machine",
+      "myQuestions": "My questions",
+      "inbox": "Questions for me",
+      "inboxCount_one": "{{count}} waiting",
+      "inboxCount_other": "{{count}} waiting"
+    },
+    "ask": {
+      "title": "Ask Kaarigar",
+      "prompt": "Tell Kaarigar what's wrong, in your own language.",
+      "example": "For example: \"Pressure not building, pump is making a thak-thak sound.\"",
+      "start": "Start asking",
+      "stop": "Stop and send",
+      "tapToStart": "Tap the gauge and speak",
+      "tapToStop": "Tap again when you're done",
+      "typeInstead": "Type instead",
+      "speakInstead": "Speak instead",
+      "typeLabel": "Your question",
+      "typePlaceholder": "What's wrong with the machine?",
+      "send": "Ask",
+      "youAsked": "You asked",
+      "retry": "Try again",
+      "another": "Ask another question"
+    },
+    "stage": {
+      "queued": "Waiting for a free line…",
+      "listening": "Listening",
+      "understanding": "Understanding",
+      "searching": "Searching repairs and manuals",
+      "writing": "Writing the answer"
+    },
+    "answer": {
+      "safety": "Safety first:",
+      "check": "To check:",
+      "step": "Step {{n}}",
+      "noAnswer": "Kaarigar couldn't find this in what it knows. An expert can help.",
+      "noAnswerMachine": "Kaarigar couldn't find this for {{code}} in the plant's repairs or manuals. An expert can help."
+    },
+    "source": {
+      "title": "Where this comes from",
+      "open": "Open source {{ref}}: {{title}}",
+      "kind": {
+        "E": "Expert repair",
+        "M": "Manual",
+        "H": "Machine history"
+      },
+      "recordBy": "Recorded by {{name}} on {{date}}",
+      "approvedBy": "approved by {{name}}",
+      "expertVoice": "Expert's voice",
+      "problem": "Problem",
+      "cause": "Cause",
+      "fix": "Fix",
+      "showEnglish": "Show in English",
+      "showMine": "Show in my language",
+      "page": "Page {{page}}",
+      "noText": "This page has no readable text.",
+      "openPdf": "Open the manual page",
+      "date": "Date",
+      "whatWasDone": "What was done",
+      "downtime": "Machine stopped for",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "technician": "Technician",
+      "error": "This source couldn't be opened. Try again."
+    },
+    "audio": {
+      "play": "Play {{label}}",
+      "pause": "Pause"
+    },
+    "read": {
+      "play": "Read aloud",
+      "stop": "Stop"
+    },
+    "feedback": {
+      "question": "Did this fix it?",
+      "fixed": "Yes, fixed",
+      "notFixed": "Still not working",
+      "thanks": "Good. Thanks for telling us."
+    },
+    "escalate": {
+      "button": "Ask an expert",
+      "notSure": "Not sure? Ask an expert",
+      "title": "Ask an expert",
+      "help": "Kaarigar will send your question and its answer to the expert who knows this machine best.",
+      "noteLabel": "Anything you already tried? (optional)",
+      "notePlaceholder": "For example: I already changed the filter.",
+      "send": "Send to expert",
+      "sending": "Sending…",
+      "sent": "Sent to an expert.",
+      "sentTo": "Sent to {{name}}.",
+      "track": "See their answer here"
+    },
+    "reply": {
+      "waiting": "Waiting for an expert to answer.",
+      "waitingFor": "Waiting for {{name}} to answer.",
+      "recording": "they're recording an answer",
+      "fixedMyself": "It's fixed now, I don't need help",
+      "from": "Answer from {{name}}",
+      "notReviewedYet": "The supervisor will check this answer before Kaarigar uses it for others.",
+      "addedToKnowledge": "Added to Kaarigar. It can now answer this for others.",
+      "closed": {
+        "not_needed": "This question was closed.",
+        "fixed_by_technician": "You fixed it yourself, so the question was closed."
+      }
+    },
+    "question": {
+      "title": "My question",
+      "notFound": "This question couldn't be found.",
+      "stillAnswering": "Kaarigar is still answering. Come back in a moment."
+    },
+    "mine": {
+      "title": "My questions",
+      "empty": "You haven't asked anything yet.",
+      "status": {
+        "answered": "Answered",
+        "fixed": "Fixed",
+        "noAnswer": "No answer",
+        "withExpert": "With an expert",
+        "replied": "Expert answered",
+        "answering": "Answering…"
+      }
+    },
+    "inbox": {
+      "title": "Questions for me",
+      "tab": {
+        "open": "Waiting",
+        "done": "Answered"
+      },
+      "empty": {
+        "open": "No questions waiting. Good work.",
+        "done": "You haven't answered any questions yet."
+      },
+      "unassigned": "Anyone can take",
+      "draft": "Your answer is a draft",
+      "why": {
+        "noAnswer": "Kaarigar had no answer",
+        "failed": "Kaarigar couldn't answer",
+        "notFixed": "Kaarigar's answer didn't fix it",
+        "asked": "They asked for an expert"
+      }
+    },
+    "answerQ": {
+      "title": "Answer a question",
+      "note": "Note:",
+      "kaarigarSaid": "What Kaarigar told them",
+      "kaarigarCouldNot": "Kaarigar couldn't answer this",
+      "didNotWork": "They said this didn't fix it.",
+      "answeredBy": "Answered by {{name}}.",
+      "yourVoice": "Voice answer",
+      "continueDraft": "Check and send your answer",
+      "take": "I'll answer this",
+      "recordAnswer": "Record the answer",
+      "quickText": "Send a quick message",
+      "voiceHelps": "A recorded answer is saved, so Kaarigar can answer this itself next time.",
+      "sayFix": "Say what's wrong, why, and how to fix it step by step",
+      "sendVoice": "Send answer",
+      "textLabel": "Message to the technician",
+      "sendText": "Send message"
+    },
+    "qr": {
+      "opening": "Opening the machine…",
+      "unknown": "This QR code isn't a Kaarigar machine sticker from your plant.",
+      "home": "Go to my machines"
+    },
+    "errors": {
+      "no_speech": "We couldn't hear a question. Hold the phone closer and ask again.",
+      "too_short": "That was too short. Tap the gauge and ask your question.",
+      "too_long": "Keep your question under one minute.",
+      "bad_audio": "This recording couldn't be read. Please ask again.",
+      "stt_failed": "The speech service is busy. Try again, or type your question.",
+      "llm_failed": "The AI helper is busy. Try again in a minute, or ask an expert.",
+      "search_failed": "Kaarigar couldn't search right now. Try again or ask an expert.",
+      "busy": "Many people are asking right now. Try again in a minute.",
+      "server_restarted": "The server restarted while answering. Ask again.",
+      "internal": "Something went wrong. Try again or ask an expert.",
+      "rate_limited": "You're asking very fast. Wait a minute and try again.",
+      "machine_not_found": "This machine isn't in your plant.",
+      "audio_too_big": "The recording is too long. Keep it under one minute.",
+      "audio_empty": "The recording is empty. Ask again.",
+      "unsupported_audio": "This phone's recording format isn't supported. Type your question instead.",
+      "stream_cut": "The connection dropped before the answer finished. Open My questions or try again.",
+      "network": "No connection. Check the internet and try again.",
+      "tts_failed": "Reading aloud isn't available right now.",
+      "not_open": "This question was already answered or closed.",
+      "assigned_to_other": "Another expert is answering this question.",
+      "reply_in_progress": "You already have an answer waiting to be checked.",
+      "own_question": "You can't answer your own question."
+    },
+    "voice": {
+      "autoSpeak": "Speak answers aloud when I ask by voice",
+      "speaking": "Speaking the answer",
+      "stop": "Stop"
+    },
+    "vad": {
+      "autoSend": "Send when I stop talking",
+      "waiting": "Speak now. It sends when you stop.",
+      "hearing": "Listening… stop talking to send",
+      "heardNothing": "I didn't hear anything. Tap the gauge and try again, closer to the phone."
+    },
+    "interrupt": {
+      "now": "Stop and ask again",
+      "again": "Ask again"
+    }
+  },
+  "escalations": {
+    "title": "Escalations",
+    "subtitle": "Questions Kaarigar couldn't settle",
+    "summary": "{{open}} open · {{unassigned}} not assigned",
+    "filter": {
+      "open": "Open",
+      "answered": "Answered",
+      "closed": "Closed",
+      "all": "All"
+    },
+    "empty": {
+      "open": "No open questions. Kaarigar is handling everything.",
+      "answered": "No answered questions yet.",
+      "closed": "No closed questions.",
+      "all": "No escalations yet."
+    },
+    "status": {
+      "open": "With expert",
+      "unassigned": "Not assigned",
+      "answered": "Answered",
+      "closed": "Closed"
+    },
+    "assignTo": "Expert answering this",
+    "pickExpert": "Pick an expert",
+    "expertLoad": "{{open}} open, {{records}} repairs recorded",
+    "role": {
+      "expert": "Expert",
+      "supervisor": "Supervisor"
+    },
+    "close": "Close question",
+    "actionError": "That didn't work. Refresh and try again.",
+    "loadError": "This escalation couldn't be loaded.",
+    "note": "Technician's note",
+    "kaarigarAnswer": "What Kaarigar answered",
+    "confidence": "{{pct}}% sure",
+    "kaarigar": {
+      "answered": "Kaarigar answered.",
+      "no_answer": "Kaarigar had no answer from the plant's knowledge.",
+      "failed": "Kaarigar couldn't answer (service error).",
+      "answering": "Kaarigar was still answering.",
+      "cancelled": "The technician left before the answer finished.",
+      "no_answer_short": "no answer"
+    },
+    "feedback": {
+      "fixed": "The technician said this fixed it.",
+      "not_fixed": "The technician said this didn't fix it.",
+      "call_supervisor": "The technician asked for a supervisor.",
+      "not_fixed_short": "didn't fix it"
+    },
+    "expertReply": "Expert's answer",
+    "waitingFor": "Waiting for {{name}}.",
+    "nobodyYet": "Nobody is assigned yet. Pick an expert above.",
+    "voiceReply": "voice answer",
+    "listen": "Listen",
+    "recordStatus": {
+      "draft": "Being processed",
+      "expert_review": "Expert is checking it",
+      "pending": "Waiting for your approval",
+      "approved": "Approved and in Kaarigar",
+      "rejected": "Sent back"
+    },
+    "inReviewQueue": "This answer is in the Review queue. Approve it to add it to Kaarigar's knowledge."
+  },
+  "nav": {
+    "escalations": "Escalations"
+  }
+}

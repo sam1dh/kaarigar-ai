@@ -32,6 +32,12 @@ def cache_profile(user: CurrentUser, tenant: dict) -> None:
         _profile_cache[user.id] = (time.time() + _PROFILE_TTL, replace(user), dict(tenant))
 
 
+def forget_profile(user_id: str) -> None:
+    """Drop a cached profile so a deactivation/role change applies on the next request."""
+    with _profile_lock:
+        _profile_cache.pop(str(user_id), None)
+
+
 @dataclass
 class CurrentUser:
     id: str
@@ -41,6 +47,7 @@ class CurrentUser:
     role: str
     is_admin: bool
     language: str
+    deactivated_at: str | None = None
     tenant: dict | None = None  # loaded once with the profile (name, slug)
 
 
@@ -104,7 +111,7 @@ def load_profile(user_id: str) -> CurrentUser:
     row = (
         admin_client()
         .table("users")
-        .select("id, tenant_id, name, employee_id, role, is_admin, language")
+        .select("id, tenant_id, name, employee_id, role, is_admin, language, deactivated_at")
         .eq("id", user_id)
         .limit(1)
         .execute()
@@ -113,6 +120,8 @@ def load_profile(user_id: str) -> CurrentUser:
     if not data:
         raise ApiError(403, "profile_missing", "No user profile for this account.")
     d = data[0]
+    if d.get("deactivated_at") is not None:
+        raise ApiError(403, "deactivated", "This account was deactivated. Ask your supervisor.")
     return CurrentUser(
         id=str(d["id"]),
         tenant_id=str(d["tenant_id"]),
@@ -121,6 +130,7 @@ def load_profile(user_id: str) -> CurrentUser:
         role=d["role"],
         is_admin=bool(d["is_admin"]),
         language=d["language"],
+        deactivated_at=d.get("deactivated_at"),
     )
 
 
@@ -135,7 +145,7 @@ def preload_profiles(limit: int = 5000) -> int:
         admin_client()
         .table("users")
         .select(
-            "id, tenant_id, name, employee_id, role, is_admin, language, tenant:tenants(id, name, slug)"
+            "id, tenant_id, name, employee_id, role, is_admin, language, deactivated_at, tenant:tenants(id, name, slug)"
         )
         .limit(limit)
         .execute()
@@ -153,6 +163,7 @@ def preload_profiles(limit: int = 5000) -> int:
             role=d["role"],
             is_admin=bool(d["is_admin"]),
             language=d["language"],
+            deactivated_at=d.get("deactivated_at"),
         )
         tenant = {"id": str(tenant_raw["id"]), "name": tenant_raw["name"], "slug": tenant_raw["slug"]}
         cache_profile(user, tenant)
@@ -171,13 +182,15 @@ def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
     with _profile_lock:
         hit = _profile_cache.get(user_id)
         if hit and hit[0] > now:
+            if hit[1].deactivated_at is not None:
+                raise ApiError(403, "deactivated", "This account was deactivated. Ask your supervisor.")
             return replace(hit[1]), dict(hit[2])
 
     row = (
         admin_client()
         .table("users")
         .select(
-            "id, tenant_id, name, employee_id, role, is_admin, language, tenant:tenants(id, name, slug)"
+            "id, tenant_id, name, employee_id, role, is_admin, language, deactivated_at, tenant:tenants(id, name, slug)"
         )
         .eq("id", user_id)
         .limit(1)
@@ -190,6 +203,8 @@ def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
     tenant_raw = d.get("tenant") or {}
     if not tenant_raw:
         raise ApiError(403, "profile_missing", "No plant found for this account.")
+    if d.get("deactivated_at") is not None:
+        raise ApiError(403, "deactivated", "This account was deactivated. Ask your supervisor.")
     user = CurrentUser(
         id=str(d["id"]),
         tenant_id=str(d["tenant_id"]),
@@ -198,6 +213,7 @@ def load_profile_with_tenant(user_id: str) -> tuple[CurrentUser, dict]:
         role=d["role"],
         is_admin=bool(d["is_admin"]),
         language=d["language"],
+        deactivated_at=d.get("deactivated_at"),
     )
     tenant = {"id": str(tenant_raw["id"]), "name": tenant_raw["name"], "slug": tenant_raw["slug"]}
     cache_profile(user, tenant)

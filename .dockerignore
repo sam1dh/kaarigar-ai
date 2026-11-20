@@ -1,0 +1,18 @@
+# Keep secrets, caches and the frontend out of the backend image
+**/.env
+**/.env.*
+!**/.env.production.example
+.tunnel-token
+**/.cache
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.venv
+**/venv
+**/node_modules
+frontend/
+docs/
+supabase/
+.git
+**/*.zip
+**/test_data/

@@ -19,6 +19,16 @@ export default function WebLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set by lib/api.ts when a deactivated account is signed out mid-session.
+  const [notice] = useState<string | null>(() => {
+    try {
+      const m = sessionStorage.getItem("kaarigar.authNotice");
+      sessionStorage.removeItem("kaarigar.authNotice");
+      return m;
+    } catch {
+      return null;
+    }
+  });
 
   async function signIn() {
     if (busy) return;
@@ -143,6 +153,11 @@ export default function WebLogin() {
             </div>
           </div>
 
+          {notice && (
+            <p className="mt-4 rounded-xl bg-alert/10 px-4 py-3 text-sm font-medium text-alert">
+              {notice}
+            </p>
+          )}
           {error && (
             <p className="mt-4 text-sm font-medium text-alert">{error}</p>
           )}

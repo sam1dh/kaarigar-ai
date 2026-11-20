@@ -30,7 +30,11 @@ export default defineConfig({
         theme_color: "#1F4239",
         background_color: "#E9EDE8",
         display: "standalone",
+        id: "/tech",
         start_url: "/tech",
+        scope: "/", // must include /m/… so sticker links belong to the app
+        launch_handler: { client_mode: ["navigate-existing", "auto"] }, // reuse the open Kaarigar window
+        handle_links: "preferred",
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
           { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
@@ -41,6 +45,10 @@ export default defineConfig({
             purpose: "any maskable",
           },
         ],
+      } as any, // older vite-plugin-pwa types don't know launch_handler / handle_links
+      workbox: {
+        navigateFallback: "/index.html", // /m/<token> always loads the app
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

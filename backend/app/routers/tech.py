@@ -35,6 +35,7 @@ def machines(user: CurrentUser = Depends(require_role(*TECH_ROLES))) -> list[Mac
         .table("machines")
         .select("id, code, name, line, machine_models(model)")
         .eq("tenant_id", user.tenant_id)
+        .is_("archived_at", "null")
         .order("code")
         .execute()
     )
@@ -48,6 +49,7 @@ def machine_by_qr(token: str, user: CurrentUser = Depends(require_role(*TECH_ROL
         .table("machines")
         .select("id, code, name, line, machine_models(model)")
         .eq("tenant_id", user.tenant_id)  # same plant only
+        .is_("archived_at", "null")  # a retired machine's old sticker stops opening it
         .eq("qr_token", token)
         .limit(1)
         .execute()

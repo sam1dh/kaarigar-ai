@@ -1,0 +1,4 @@
+# Phase 4 adds one package:
+segno>=1.6          # QR codes as SVG for machine stickers (pure Python, no Pillow)
+# Everything else is already installed by Phase 0-3 (fastapi, pydantic, httpx, psycopg[binary], ...).
+# Frontend: one npm package: qr-scanner@^1.4.2 (in-app QR scanner, MIT).

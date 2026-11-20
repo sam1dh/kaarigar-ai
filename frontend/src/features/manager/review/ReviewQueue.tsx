@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getReviewQueue, type QueueItem } from '../../capture/captureApi';
+import { useLiveRefresh } from '../../assist/realtime';
 import { AlertIcon, ShieldIcon, Spinner } from '../../capture/ui';
 import RecordReview from './RecordReview';
 
@@ -20,7 +21,8 @@ function ago(iso: string | null, lang: string) {
 
 export default function ReviewQueue() {
   const { t, i18n } = useTranslation();
-  const q = useQuery({ queryKey: ['review', 'queue'], queryFn: getReviewQueue, refetchInterval: 20000 });
+  const q = useQuery({ queryKey: ['review', 'queue'], queryFn: getReviewQueue, refetchInterval: 60000 });
+  useLiveRefresh('repair_records', [['review']]);
   const items = q.data?.items ?? [];
   const [selected, setSelected] = useState<string | null>(null);
 

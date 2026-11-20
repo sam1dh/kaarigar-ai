@@ -35,3 +35,15 @@ __dev-login.html
 frontend/dev-dist/
 .cache/
 backend/eval/results/
+# Phase 5 — deploy secrets, local tooling, generated artifacts
+deploy/.env.production
+deploy/frontend.env.production
+deploy/azure.conf
+deploy/.swa-token
+deploy/.image-tag
+.tunnel-token
+.cloudflare-token
+.azcli/
+
+# printable QR sticker sheet (contains live machine tokens; regenerate with scripts/print_stickers.py)
+backend/stickers.html

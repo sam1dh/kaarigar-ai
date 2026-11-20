@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { initials } from "@/features/auth/types";
 import { getReviewCount } from "@/features/capture/captureApi";
+import { useEscalationCount } from "@/features/manager/escalations/EscalationsPage";
 import { useSessionStore } from "@/stores/session";
 import LanguageSheet from "@/components/LanguageSheet";
 import TextSizeControl from "@/components/TextSizeControl";
@@ -40,6 +41,7 @@ export default function ManagerLayout() {
   const [langOpen, setLangOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [reviewCount, setReviewCount] = useState<number | null>(null);
+  const escalationCount = useEscalationCount();
 
   // Badge on "Review queue": count of pending notes, refreshed every 30 s.
   useEffect(() => {
@@ -81,11 +83,6 @@ export default function ManagerLayout() {
         to: "/manager/analytics",
         labelKey: "manager.analytics",
         icon: <BarChart3 className="h-4.5 w-4.5" />,
-      },
-      {
-        to: "/manager/team",
-        labelKey: "manager.team",
-        icon: <Users className="h-4.5 w-4.5" />,
       },
     ],
     [],
@@ -168,6 +165,11 @@ export default function ManagerLayout() {
               {item.to === "/manager" && !!reviewCount && (
                 <span className="ml-auto shrink-0 rounded-full bg-alert px-2 py-0.5 text-xs font-semibold text-white">
                   {reviewCount}
+                </span>
+              )}
+              {item.to === "/manager/escalations" && escalationCount > 0 && (
+                <span className="ml-auto shrink-0 rounded-full bg-alert px-2 py-0.5 text-xs font-semibold text-white">
+                  {escalationCount}
                 </span>
               )}
             </NavLink>
