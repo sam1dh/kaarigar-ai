@@ -1,0 +1,12 @@
+# Azure names for Kaarigar (no secrets here). Copy to deploy/azure.conf and edit if a name is taken.
+RG=kaarigar-rg                      # resource group
+LOCATION=centralindia               # Container Apps + registry region
+ACR=kaarigaracr1234              # CHANGE the digits; registry name: 5-50 lowercase letters/digits, globally unique, e.g. kaarigaracr7391
+ACA_ENV=kaarigar-env                # Container Apps environment
+APP=kaarigar-api                    # Container App (backend)
+SWA=kaarigar-web                    # Static Web App (frontend)
+SWA_LOCATION=eastasia               # Static Web Apps only allows a few regions; content is served worldwide anyway
+API_DOMAIN=api.kaarigar-ai.online
+APP_DOMAIN=app.kaarigar-ai.online
+CPU=1.0
+MEMORY=2.0Gi

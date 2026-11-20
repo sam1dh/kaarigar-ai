@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Globe, LogOut, Search, Type } from "lucide-react";
 import { Link } from "react-router-dom";
 import MyNotes from "@/features/capture/MyNotes";
+import { MyQuestionsList } from "@/features/assist/MyQuestions";
+import { useInboxCount } from "@/features/assist/ExpertInbox";
 import { Input } from "@/components/ui/input";
 import LanguageSheet from "@/components/LanguageSheet";
 import TextSizeControl from "@/components/TextSizeControl";
@@ -22,6 +24,8 @@ export default function TechHome() {
   const [langOpen, setLangOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [codeFilter, setCodeFilter] = useState("");
+  const isExpert = profile?.role === "expert" || profile?.role === "supervisor";
+  const inboxCount = useInboxCount(isExpert);
 
   const { data: machines, isLoading } = useQuery({
     queryKey: ["tech", "machines"],
@@ -109,8 +113,11 @@ export default function TechHome() {
         {t("tech.whichMachine")}
       </h1>
 
-      {/* Dark green QR placeholder card (camera arrives in a later phase) */}
-      <div className="mt-6 flex flex-col items-center rounded-card bg-green-deep px-6 py-10 text-white">
+      {/* Scan machine QR — the first and largest way into a machine on the floor */}
+      <Link
+        to="/tech/scan"
+        className="mt-6 flex flex-col items-center rounded-card bg-green-deep px-6 py-12 text-white transition-opacity hover:opacity-95"
+      >
         <div className="relative mb-6 flex h-28 w-28 items-center justify-center">
           {/* corner brackets */}
           {[
@@ -134,10 +141,20 @@ export default function TechHome() {
             ))}
           </div>
         </div>
-        <p className="text-center text-[0.9375rem] text-white/85">
+        <p className="text-center font-head text-xl font-semibold">
+          {t("scan.title")}
+        </p>
+        <p className="mt-1 text-center text-[0.9375rem] text-white/85">
           {t("tech.scanQr")}
         </p>
-      </div>
+      </Link>
+
+      <Link
+        to="/tech/ask"
+        className="mt-4 flex items-center justify-center gap-2 rounded-card border border-line bg-white px-4 py-3 font-semibold text-green-deep hover:bg-surface"
+      >
+        {t("assist.home.askAny")}
+      </Link>
 
       {/* Type a machine code */}
       <div className="relative mt-4">
@@ -188,6 +205,29 @@ export default function TechHome() {
             </Link>
           ))}
         </div>
+      )}
+
+      {/* My questions */}
+      <div className="mb-3 mt-8 flex items-center justify-between">
+        <p className="text-sm font-medium text-ink-muted">{t("assist.home.myQuestions")}</p>
+        <Link to="/tech/questions" className="text-sm font-semibold text-green-deep">
+          {t("assist.mine.title")}
+        </Link>
+      </div>
+      <MyQuestionsList limit={3} />
+
+      {isExpert && (
+        <Link
+          to="/tech/inbox"
+          className="mt-4 flex items-center justify-between rounded-card border border-line bg-white px-4 py-4 font-semibold text-ink hover:bg-surface"
+        >
+          <span>{t("assist.home.inbox")}</span>
+          {inboxCount > 0 && (
+            <span className="rounded-full bg-alert px-2 py-0.5 text-xs font-semibold text-white">
+              {inboxCount}
+            </span>
+          )}
+        </Link>
       )}
 
       {/* Experts and supervisors can find their own recordings here. */}

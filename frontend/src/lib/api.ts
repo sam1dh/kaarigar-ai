@@ -59,6 +59,22 @@ export async function api<T = unknown>(
       code = "server_error";
       message = "Can't reach the service. Please try again.";
     }
+    // Deactivated by a supervisor while holding a still-valid token: sign out at
+    // once and show the reason on the login screen (same as profile_missing).
+    if (res.status === 403 && code === "deactivated") {
+      try {
+        sessionStorage.setItem("kaarigar.authNotice", message);
+      } catch {
+        /* storage blocked */
+      }
+      await supabase.auth.signOut();
+      const target = window.location.pathname.startsWith("/manager")
+        ? "/manager/login"
+        : "/login";
+      if (!window.location.pathname.endsWith("/login")) {
+        window.location.assign(target);
+      }
+    }
     throw new ApiError(res.status, code, message);
   }
 

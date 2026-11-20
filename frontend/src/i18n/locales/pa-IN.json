@@ -46,7 +46,6 @@
     "escalations": "ਐਸਕੇਲੇਸ਼ਨ",
     "knowledgeBase": "ਨਾਲੇਜ ਬੇਸ",
     "analytics": "ਐਨਾਲਿਟਿਕਸ",
-    "team": "ਟੀਮ",
     "setup": "ਸੈੱਟਅੱਪ (ਸਿਰਫ਼ ਐਡਮਿਨ)",
     "machines": "ਮਸ਼ੀਨਾਂ",
     "documents": "ਦਸਤਾਵੇਜ਼",
@@ -249,6 +248,762 @@
       "steps": "ਕਿਰਪਾ ਕਰਕੇ ਮੁਰੰਮਤ ਦੇ ਕਦਮ ਕ੍ਰਮ ਵਿੱਚ ਦੱਸੋ।",
       "safety": "ਕਿਰਪਾ ਕਰਕੇ ਲਿਆ ਸੁਰੱਖਿਆ ਕਦਮ ਸ਼ਾਮਲ ਕਰੋ।",
       "wrongMachine": "ਇਹ ਮਸ਼ੀਨ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ। ਜਾਂਚ ਕਰਕੇ ਦੁਬਾਰਾ ਰਿਕਾਰਡ ਕਰੋ।"
+    }
+  },
+  "assist": {
+    "close": "ਬੰਦ ਕਰੋ",
+    "machine": {
+      "ask": "ਸਵਾਲ ਪੁੱਛੋ",
+      "askHint": "ਕੀ ਗਲਤ ਹੈ, ਦੱਸੋ। Kaarigar ਇਸ ਪਲਾਂਟ ਦੀ ਮੁਰੰਮਤ ਤੇ ਮੈਨੁਅਲ ਤੋਂ ਜਵਾਬ ਦਿੰਦਾ ਹੈ।"
+    },
+    "home": {
+      "askAny": "ਕਿਸੇ ਵੀ ਮਸ਼ੀਨ ਬਾਰੇ ਪੁੱਛੋ",
+      "myQuestions": "ਮੇਰੇ ਸਵਾਲ",
+      "inbox": "ਮੇਰੇ ਲਈ ਸਵਾਲ",
+      "inboxCount_one": "{{count}} ਉਡੀਕ ਰਹੇ ਹਨ",
+      "inboxCount_other": "{{count}} ਉਡੀਕ ਰਹੇ ਹਨ"
+    },
+    "ask": {
+      "title": "Kaarigar ਨੂੰ ਪੁੱਛੋ",
+      "prompt": "Kaarigar ਨੂੰ ਦੱਸੋ ਕਿ ਕੀ ਗਲਤ ਹੈ, ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ।",
+      "example": "ਉਦਾਹਰਨ ਲਈ: \"ਦਬਾਅ ਨਹੀਂ ਬਣ ਰਿਹਾ, ਪੰਪ ਥੱਕ-ਥੱਕ ਦੀ ਆਵਾਜ਼ ਕਰ ਰਿਹਾ ਹੈ।\"",
+      "start": "ਪੁੱਛਣਾ ਸ਼ੁਰੂ ਕਰੋ",
+      "stop": "ਰੋਕੋ ਅਤੇ ਭੇਜੋ",
+      "tapToStart": "ਗੇਜ ਨੂੰ ਟੈਪ ਕਰੋ ਅਤੇ ਬੋਲੋ",
+      "tapToStop": "ਜਦੋਂ ਮੁਕੰਮਲ ਹੋ ਜਾਓ, ਦੁਬਾਰਾ ਟੈਪ ਕਰੋ",
+      "typeInstead": "ਇਸ ਦੀ ਬਜਾਏ ਟਾਈਪ ਕਰੋ",
+      "speakInstead": "ਇਸ ਦੀ ਬਜਾਏ ਬੋਲੋ",
+      "typeLabel": "ਤੁਹਾਡਾ ਸਵਾਲ",
+      "typePlaceholder": "ਮਸ਼ੀਨ ਵਿੱਚ ਕੀ ਗਲਤ ਹੈ?",
+      "send": "ਪੁੱਛੋ",
+      "youAsked": "ਤੁਸੀਂ ਪੁੱਛਿਆ",
+      "retry": "ਫਿਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+      "another": "ਹੋਰ ਸਵਾਲ ਪੁੱਛੋ"
+    },
+    "stage": {
+      "queued": "ਖਾਲੀ ਲਾਈਨ ਦੀ ਉਡੀਕ…",
+      "listening": "ਸੁਣ ਰਿਹਾ ਹੈ",
+      "understanding": "ਸਮਝ ਰਿਹਾ ਹੈ",
+      "searching": "ਮੁਰੰਮਤ ਅਤੇ ਮੈਨੁਅਲ ਖੋਜ ਰਿਹਾ ਹੈ",
+      "writing": "ਜਵਾਬ ਲਿਖ ਰਿਹਾ ਹੈ"
+    },
+    "answer": {
+      "safety": "ਸੁਰੱਖਿਆ ਪਹਿਲਾਂ:",
+      "check": "ਚੈੱਕ ਕਰਨ ਲਈ:",
+      "step": "ਕਦਮ {{n}}",
+      "noAnswer": "Kaarigar ਨੂੰ ਇਹ ਨਹੀਂ ਮਿਲਿਆ ਜੋ ਉਹ ਜਾਣਦਾ ਹੈ। ਕਿਸੇ ਵਿਸ਼ੇਸ਼ਗਿਆ ਦੀ ਮਦਦ ਲੈ ਸਕਦੇ ਹੋ।",
+      "noAnswerMachine": "Kaarigar ਨੂੰ {{code}} ਲਈ ਪਲਾਂਟ ਦੀ ਮੁਰੰਮਤ ਜਾਂ ਮੈਨੁਅਲ ਵਿੱਚ ਇਹ ਨਹੀਂ ਮਿਲਿਆ। ਕਿਸੇ ਵਿਸ਼ੇਸ਼ਗਿਆ ਦੀ ਮਦਦ ਲੈ ਸਕਦੇ ਹੋ।"
+    },
+    "source": {
+      "title": "ਇਹ ਕਿੱਥੋਂ ਆਇਆ",
+      "open": "ਸਰੋਤ ਖੋਲ੍ਹੋ {{ref}}: {{title}}",
+      "kind": {
+        "E": "ਵਿਸ਼ੇਸ਼ਗਿਆ ਮੁਰੰਮਤ",
+        "M": "ਮੈਨੁਅਲ",
+        "H": "ਮਸ਼ੀਨ ਇਤਿਹਾਸ"
+      },
+      "recordBy": "{{name}} ਦੁਆਰਾ {{date}} ਨੂੰ ਰਿਕਾਰਡ ਕੀਤਾ ਗਿਆ",
+      "approvedBy": "{{name}} ਦੁਆਰਾ ਮਨਜ਼ੂਰ ਕੀਤਾ ਗਿਆ",
+      "expertVoice": "ਵਿਸ਼ੇਸ਼ਗਿਆ ਦੀ ਆਵਾਜ਼",
+      "problem": "ਸਮੱਸਿਆ",
+      "cause": "ਕਾਰਨ",
+      "fix": "ਠੀਕ ਕਰੋ",
+      "showEnglish": "ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਦਿਖਾਓ",
+      "showMine": "ਮੇਰੀ ਭਾਸ਼ਾ ਵਿੱਚ ਦਿਖਾਓ",
+      "page": "ਪੰਨਾ {{page}}",
+      "noText": "ਇਸ ਪੰਨੇ ਵਿੱਚ ਕੋਈ ਪੜ੍ਹਨਯੋਗ ਟੈਕਸਟ ਨਹੀਂ ਹੈ।",
+      "openPdf": "ਮੈਨੁਅਲ ਪੰਨਾ ਖੋਲ੍ਹੋ",
+      "date": "ਤਾਰੀਖ",
+      "whatWasDone": "ਕੀ ਕੀਤਾ ਗਿਆ",
+      "downtime": "ਮਸ਼ੀਨ ਰੁਕੀ ਹੋਈ",
+      "minutes_one": "{{count}} ਮਿੰਟ",
+      "minutes_other": "{{count}} ਮਿੰਟ",
+      "technician": "ਟੈਕਨੀਸ਼ੀਅਨ",
+      "error": "ਇਹ ਸਰੋਤ ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+    },
+    "audio": {
+      "play": "ਚਲਾਓ {{label}}",
+      "pause": "ਰੋਕੋ"
+    },
+    "read": {
+      "play": "ਉੱਚੀ ਪੜ੍ਹੋ",
+      "stop": "ਰੋਕੋ"
+    },
+    "feedback": {
+      "question": "ਕੀ ਠੀਕ ਹੋ ਗਿਆ?",
+      "fixed": "ਹਾਂ, ਠੀਕ ਹੋ ਗਿਆ",
+      "notFixed": "ਅਜੇ ਵੀ ਨਹੀਂ ਚੱਲ ਰਿਹਾ",
+      "thanks": "ਠੀਕ ਹੈ। ਦੱਸਣ ਲਈ ਧੰਨਵਾਦ।"
+    },
+    "escalate": {
+      "button": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੂੰ ਪੁੱਛੋ",
+      "notSure": "ਪੱਕਾ ਨਹੀਂ? ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੂੰ ਪੁੱਛੋ",
+      "title": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੂੰ ਪੁੱਛੋ",
+      "help": "ਕਾੜਿਗਾਰ ਤੁਹਾਡਾ ਸਵਾਲ ਅਤੇ ਜਵਾਬ ਉਸ ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੂੰ ਭੇਜੇਗਾ ਜੋ ਇਸ ਮਸ਼ੀਨ ਨੂੰ ਸਭ ਤੋਂ ਵਧੀਆ ਜਾਣਦਾ ਹੈ।",
+      "noteLabel": "ਤੁਸੀਂ ਪਹਿਲਾਂ ਕੀ ਕੋਸ਼ਿਸ਼ ਕੀਤੀ? (ਚੋਣੀ)",
+      "notePlaceholder": "ਉਦਾਹਰਨ: ਮੈਂ ਪਹਿਲਾਂ ਫਿਲਟਰ ਬਦਲਿਆ।",
+      "send": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੂੰ ਭੇਜੋ",
+      "sending": "ਭੇਜ ਰਿਹਾ ਹੈ…",
+      "sent": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੂੰ ਭੇਜਿਆ ਗਿਆ।",
+      "sentTo": "{{name}} ਨੂੰ ਭੇਜਿਆ ਗਿਆ।",
+      "track": "ਉਨ੍ਹਾਂ ਦਾ ਜਵਾਬ ਇੱਥੇ ਵੇਖੋ"
+    },
+    "reply": {
+      "waiting": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਦੇ ਜਵਾਬ ਦੀ ਉਡੀਕ ਕਰ ਰਿਹਾ ਹੈ।",
+      "waitingFor": "{{name}} ਦੇ ਜਵਾਬ ਦੀ ਉਡੀਕ ਕਰ ਰਿਹਾ ਹੈ।",
+      "recording": "ਉਹ ਜਵਾਬ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹਨ",
+      "fixedMyself": "ਹੁਣ ਠੀਕ ਹੋ ਗਿਆ, ਮਦਦ ਦੀ ਲੋੜ ਨਹੀਂ",
+      "from": "{{name}} ਤੋਂ ਜਵਾਬ",
+      "notReviewedYet": "ਸੁਪਰਵਾਈਜ਼ਰ ਇਸ ਜਵਾਬ ਨੂੰ ਜਾਂਚੇਗਾ ਪਹਿਲਾਂ ਕਿ ਕਾੜਿਗਾਰ ਇਸ ਨੂੰ ਹੋਰਾਂ ਲਈ ਵਰਤੇ।",
+      "addedToKnowledge": "ਕਾੜਿਗਾਰ ਵਿੱਚ ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ। ਹੁਣ ਇਹ ਹੋਰਾਂ ਲਈ ਜਵਾਬ ਦੇ ਸਕਦਾ ਹੈ।",
+      "closed": {
+        "not_needed": "ਇਹ ਸਵਾਲ ਬੰਦ ਕੀਤਾ ਗਿਆ।",
+        "fixed_by_technician": "ਤੁਸੀਂ ਖੁਦ ਠੀਕ ਕੀਤਾ, ਇਸ ਲਈ ਸਵਾਲ ਬੰਦ ਕੀਤਾ ਗਿਆ।"
+      }
+    },
+    "question": {
+      "title": "ਮੇਰਾ ਸਵਾਲ",
+      "notFound": "ਇਹ ਸਵਾਲ ਨਹੀਂ ਮਿਲਿਆ।",
+      "stillAnswering": "ਕਾੜਿਗਾਰ ਹਾਲੇ ਵੀ ਜਵਾਬ ਦੇ ਰਿਹਾ ਹੈ। ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਵਾਪਸ ਆਓ।"
+    },
+    "mine": {
+      "title": "ਮੇਰੇ ਸਵਾਲ",
+      "empty": "ਤੁਸੀਂ ਹਾਲੇ ਕੋਈ ਸਵਾਲ ਨਹੀਂ ਪੁੱਛਿਆ।",
+      "status": {
+        "answered": "ਜਵਾਬ ਦਿੱਤਾ",
+        "fixed": "ਠੀਕ ਹੋ ਗਿਆ",
+        "noAnswer": "ਕੋਈ ਜਵਾਬ ਨਹੀਂ",
+        "withExpert": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨਾਲ",
+        "replied": "ਵਿਸ਼ੇਸ਼ਗਿਆਨ ਨੇ ਜਵਾਬ ਦਿੱਤਾ",
+        "answering": "ਜਵਾਬ ਦੇ ਰਿਹਾ ਹੈ…"
+      }
+    },
+    "inbox": {
+      "title": "ਮੇਰੇ ਲਈ ਸਵਾਲ",
+      "tab": {
+        "open": "ਉਡੀਕ",
+        "done": "ਜਵਾਬ ਦਿੱਤਾ"
+      },
+      "empty": {
+        "open": "ਕੋਈ ਉਡੀਕ ਕਰ ਰਹੇ ਸਵਾਲ ਨਹੀਂ। ਵਧੀਆ ਕੰਮ।",
+        "done": "ਤੁਸੀਂ ਹਾਲੇ ਕੋਈ ਸਵਾਲ ਦਾ ਜਵਾਬ ਨਹੀਂ ਦਿੱਤਾ।"
+      },
+      "unassigned": "Anyone can take",
+      "draft": "Your answer is a draft",
+      "why": {
+        "noAnswer": "Kaarigar had no answer",
+        "failed": "Kaarigar couldn't answer",
+        "notFixed": "Kaarigar's answer didn't fix it",
+        "asked": "They asked for an expert"
+      }
+    },
+    "answerQ": {
+      "title": "Answer a question",
+      "note": "Note:",
+      "kaarigarSaid": "What Kaarigar told them",
+      "kaarigarCouldNot": "Kaarigar couldn't answer this",
+      "didNotWork": "They said this didn't fix it.",
+      "answeredBy": "Answered by {{name}}.",
+      "yourVoice": "Voice answer",
+      "continueDraft": "Check and send your answer",
+      "take": "I'll answer this",
+      "recordAnswer": "Record the answer",
+      "quickText": "Send a quick message",
+      "voiceHelps": "A recorded answer is saved, so Kaarigar can answer this itself next time.",
+      "sayFix": "Say what's wrong, why, and how to fix it step by step",
+      "sendVoice": "Send answer",
+      "textLabel": "Message to the technician",
+      "sendText": "Send message"
+    },
+    "qr": {
+      "opening": "Opening the machine…",
+      "unknown": "This QR code isn't a Kaarigar machine sticker from your plant.",
+      "home": "Go to my machines"
+    },
+    "errors": {
+      "no_speech": "We couldn't hear a question. Hold the phone closer and ask again.",
+      "too_short": "That was too short. Tap the gauge and ask your question.",
+      "too_long": "Keep your question under one minute.",
+      "bad_audio": "This recording couldn't be read. Please ask again.",
+      "stt_failed": "The speech service is busy. Try again, or type your question.",
+      "llm_failed": "The AI helper is busy. Try again in a minute, or ask an expert.",
+      "search_failed": "Kaarigar couldn't search right now. Try again or ask an expert.",
+      "busy": "Many people are asking right now. Try again in a minute.",
+      "server_restarted": "The server restarted while answering. Ask again.",
+      "internal": "Something went wrong. Try again or ask an expert.",
+      "rate_limited": "You're asking very fast. Wait a minute and try again.",
+      "machine_not_found": "This machine isn't in your plant.",
+      "audio_too_big": "The recording is too long. Keep it under one minute.",
+      "audio_empty": "The recording is empty. Ask again.",
+      "unsupported_audio": "This phone's recording format isn't supported. Type your question instead.",
+      "stream_cut": "The connection dropped before the answer finished. Open My questions or try again.",
+      "network": "No connection. Check the internet and try again.",
+      "tts_failed": "Reading aloud isn't available right now.",
+      "not_open": "This question was already answered or closed.",
+      "assigned_to_other": "Another expert is answering this question.",
+      "reply_in_progress": "You already have an answer waiting to be checked.",
+      "own_question": "You can't answer your own question."
+    },
+    "voice": {
+      "autoSpeak": "Speak answers aloud when I ask by voice",
+      "speaking": "Speaking the answer",
+      "stop": "Stop"
+    },
+    "vad": {
+      "autoSend": "ਬੋਲਣਾ ਰੋਕੋ ਤਾਂ ਭੇਜੋ",
+      "waiting": "ਹੁਣ ਬੋਲੋ। ਰੁਕਣ 'ਤੇ ਭੇਜੋ",
+      "hearing": "ਸੁਣ ਰਿਹਾ ਹਾਂ… ਬੋਲਣਾ ਰੋਕੋ ਭੇਜਣ ਲਈ",
+      "heardNothing": "ਕੁਝ ਨਹੀਂ ਸੁਣਿਆ। ਗੇਜ ਨੂੰ ਟੈਪ ਕਰੋ ਤੇ ਫਿਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ, ਫੋਨ ਦੇ ਨੇੜੇ।"
+    },
+    "interrupt": {
+      "now": "ਰੁਕੋ ਤੇ ਫਿਰ ਪੁੱਛੋ",
+      "again": "ਫਿਰ ਪੁੱਛੋ"
+    }
+  },
+  "escalations": {
+    "title": "ਉੱਚਾ ਪੱਧਰ",
+    "subtitle": "ਪ੍ਰਸ਼ਨ ਜਿਨ੍ਹਾਂ ਨੂੰ Kaarigar ਹੱਲ ਨਹੀਂ ਕਰ ਸਕਿਆ",
+    "summary": "{{open}} ਖੁੱਲ੍ਹੇ · {{unassigned}} ਅਸਾਈਨ ਨਹੀਂ",
+    "filter": {
+      "open": "ਖੁੱਲ੍ਹੇ",
+      "answered": "ਉੱਤਰ ਦਿੱਤਾ",
+      "closed": "ਬੰਦ",
+      "all": "ਸਭ"
+    },
+    "empty": {
+      "open": "ਕੋਈ ਖੁੱਲ੍ਹੇ ਪ੍ਰਸ਼ਨ ਨਹੀਂ। Kaarigar ਸਭ ਕੁਝ ਸੰਭਾਲ ਰਿਹਾ ਹੈ।",
+      "answered": "ਹਾਲੇ ਕੋਈ ਉੱਤਰ ਦਿੱਤਾ ਪ੍ਰਸ਼ਨ ਨਹੀਂ।",
+      "closed": "ਕੋਈ ਬੰਦ ਪ੍ਰਸ਼ਨ ਨਹੀਂ।",
+      "all": "ਹਾਲੇ ਕੋਈ ਉੱਚਾ ਪੱਧਰ ਨਹੀਂ।"
+    },
+    "status": {
+      "open": "ਵਿਸ਼ੇਸ਼ਗਿਆ ਨਾਲ",
+      "unassigned": "ਅਸਾਈਨ ਨਹੀਂ",
+      "answered": "ਉੱਤਰ ਦਿੱਤਾ",
+      "closed": "ਬੰਦ"
+    },
+    "assignTo": "ਇਸ ਨੂੰ ਜਵਾਬ ਦੇ ਰਿਹਾ ਵਿਸ਼ੇਸ਼ਗਿਆ",
+    "pickExpert": "ਵਿਸ਼ੇਸ਼ਗਿਆ ਚੁਣੋ",
+    "expertLoad": "{{open}} ਖੁੱਲ੍ਹੇ, {{records}} ਮੁਰੰਮਤ ਦਰਜ",
+    "role": {
+      "expert": "ਵਿਸ਼ੇਸ਼ਗਿਆ",
+      "supervisor": "ਸੁਪਰਵਾਈਜ਼ਰ"
+    },
+    "close": "ਪ੍ਰਸ਼ਨ ਬੰਦ ਕਰੋ",
+    "actionError": "ਇਹ ਕੰਮ ਨਹੀਂ ਕੀਤਾ। ਰੀਫ੍ਰੈਸ਼ ਕਰੋ ਤੇ ਫਿਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "loadError": "ਇਹ ਉੱਚਾ ਪੱਧਰ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਿਆ।",
+    "note": "ਟੈਕਨੀਸ਼ੀਅਨ ਦੀ ਨੋਟ",
+    "kaarigarAnswer": "Kaarigar ਨੇ ਕੀ ਜਵਾਬ ਦਿੱਤਾ",
+    "confidence": "{{pct}}% ਯਕੀਨ",
+    "kaarigar": {
+      "answered": "Kaarigar ਨੇ ਜਵਾਬ ਦਿੱਤਾ।",
+      "no_answer": "Kaarigar ਕੋਲ ਪਲਾਂਟ ਦੀ ਜਾਣਕਾਰੀ ਤੋਂ ਕੋਈ ਜਵਾਬ ਨਹੀਂ ਸੀ।",
+      "failed": "Kaarigar ਜਵਾਬ ਨਹੀਂ ਦੇ ਸਕਿਆ (ਸੇਵਾ ਗਲਤੀ)।",
+      "answering": "Kaarigar ਹਾਲੇ ਵੀ ਜਵਾਬ ਦੇ ਰਿਹਾ ਸੀ।",
+      "cancelled": "ਟੈਕਨੀਸ਼ੀਅਨ ਜਵਾਬ ਖਤਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਚਲਾ ਗਿਆ।",
+      "no_answer_short": "ਕੋਈ ਜਵਾਬ ਨਹੀਂ"
+    },
+    "feedback": {
+      "fixed": "ਟੈਕਨੀਸ਼ੀਅਨ ਨੇ ਕਿਹਾ ਕਿ ਇਹ ਠੀਕ ਹੋ ਗਿਆ।",
+      "not_fixed": "ਟੈਕਨੀਸ਼ੀਅਨ ਨੇ ਕਿਹਾ ਕਿ ਇਹ ਠੀਕ ਨਹੀਂ ਹੋਇਆ।",
+      "call_supervisor": "ਟੈਕਨੀਸ਼ੀਅਨ ਨੇ ਸੁਪਰਵਾਈਜ਼ਰ ਮੰਗਿਆ।",
+      "not_fixed_short": "ਠੀਕ ਨਹੀਂ ਹੋਇਆ"
+    },
+    "expertReply": "ਵਿਸ਼ੇਸ਼ਗਿਆ ਦਾ ਜਵਾਬ",
+    "waitingFor": "{{name}} ਦੀ ਉਡੀਕ",
+    "nobodyYet": "ਹਾਲੇ ਕੋਈ ਅਸਾਈਨ ਨਹੀਂ। ਉੱਪਰੋਂ ਵਿਸ਼ੇਸ਼ਗਿਆ ਚੁਣੋ।",
+    "voiceReply": "ਆਵਾਜ਼ ਜਵਾਬ",
+    "listen": "ਸੁਣੋ",
+    "recordStatus": {
+      "draft": "ਪ੍ਰਕਿਰਿਆ ਵਿੱਚ",
+      "expert_review": "ਵਿਸ਼ੇਸ਼ਗਿਆ ਜਾਂਚ ਕਰ ਰਿਹਾ ਹੈ",
+      "pending": "ਤੁਹਾਡੀ ਮਨਜ਼ੂਰੀ ਦੀ ਉਡੀਕ",
+      "approved": "Approved and in Kaarigar",
+      "rejected": "Sent back"
+    },
+    "inReviewQueue": "This answer is in the Review queue. Approve it to add it to Kaarigar's knowledge."
+  },
+  "nav": {
+    "escalations": "Escalations",
+    "knowledge": "Knowledge base",
+    "analytics": "Analytics",
+    "machines": "Machines",
+    "documents": "Documents",
+    "logs": "Breakdown logs",
+    "people": "People"
+  },
+  "manage": {
+    "nav": {
+      "documents": "Documents"
+    },
+    "common": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "edit": "Edit",
+      "actions": "Actions"
+    },
+    "role": {
+      "technician": "Technician",
+      "expert": "Expert",
+      "supervisor": "Supervisor"
+    },
+    "errors": {
+      "generic": "That didn't work. Try again.",
+      "load": "Couldn't load this page. Check the connection and reload.",
+      "bad_employee_id": "Employee ID: 2–20 letters, digits or dashes, like SH-0521.",
+      "employee_id_taken": "This employee ID is already used in this plant.",
+      "employee_id_required": "Technicians and experts sign in with an employee ID.",
+      "email_required": "Supervisors sign in on the web with their work email.",
+      "login_exists": "This employee ID or email already has a login.",
+      "bad_code": "Machine code: letters then a number, like HP-07 or CNC-03.",
+      "code_taken": "A machine with this code already exists."
+    },
+    "people": {
+      "title": "People",
+      "subtitle": "Who can use Kaarigar in this plant.",
+      "summary": "{{active}} people can sign in · {{new}} haven't signed in yet",
+      "add": "Add person",
+      "addTitle": "Add a person",
+      "editTitle": "Edit {{name}}",
+      "search": "Search name or ID",
+      "noMatch": "Nobody matches that search.",
+      "filter": {
+        "current": "Current",
+        "new": "Not signed in yet",
+        "deactivated": "Deactivated",
+        "all": "All"
+      },
+      "empty": {
+        "current": "No people yet. Add your technicians and experts so they can sign in on their phones.",
+        "new": "Everyone has signed in at least once.",
+        "deactivated": "Nobody is deactivated.",
+        "all": "No people yet."
+      },
+      "col": {
+        "person": "Person",
+        "role": "Role",
+        "language": "Language",
+        "signsIn": "Signs in with",
+        "lastActive": "Last active",
+        "notes": "Approved notes"
+      },
+      "admin": "Admin",
+      "you": "you",
+      "status": {
+        "new": "Not signed in yet",
+        "deactivated": "Deactivated"
+      },
+      "loginPin": "Employee ID + PIN",
+      "loginEmail": "Email + password",
+      "never": "Never",
+      "today": "Today",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
+      "resetPin": "New PIN",
+      "resetPassword": "New password",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "form": {
+        "role": "Role",
+        "roleHint": {
+          "technician": "Asks questions on the phone",
+          "expert": "Also records repairs and answers questions",
+          "supervisor": "Uses this web dashboard"
+        },
+        "supervisorFixed": "Supervisors sign in with email, so their role can't change to technician or expert.",
+        "name": "Full name",
+        "employeeId": "Employee ID",
+        "employeeIdHint": "The ID printed on their card. They type it with a PIN to sign in.",
+        "email": "Work email",
+        "emailHint": "They sign in at the web dashboard with this email.",
+        "language": "Language",
+        "languageHint": "Kaarigar listens and answers in this language. They can change it in the app.",
+        "admin": "Plant admin",
+        "adminHint": "Can add people and machines, upload documents and breakdown logs.",
+        "create": "Add and create login"
+      },
+      "confirm": {
+        "reset": {
+          "title": "New PIN for {{name}}?",
+          "body": "Their old PIN stops working right away. You'll see the new PIN once, to give to them.",
+          "bodyEmail": "Their old password stops working right away. You'll see a temporary password once, to give to them.",
+          "cta": "Make new login"
+        },
+        "deactivate": {
+          "title": "Deactivate {{name}}?",
+          "body": "They can't sign in any more. Their repair notes stay in the knowledge base with their name. Questions waiting for them go back to unassigned.",
+          "cta": "Deactivate"
+        },
+        "reactivate": {
+          "title": "Reactivate {{name}}?",
+          "body": "They can sign in again with their old PIN or password. If they forgot it, make a new one after this.",
+          "cta": "Reactivate"
+        }
+      }
+    },
+    "slip": {
+      "title": "Login for {{name}}",
+      "once": "This is the only time you'll see this. Kaarigar doesn't keep it. Give it to them now or print the slip.",
+      "plant": "Plant code",
+      "employeeId": "Employee ID",
+      "email": "Email",
+      "tempPassword": "Temporary password",
+      "howPin": "Open Kaarigar on your phone, enter your employee ID and this PIN.",
+      "howEmail": "Sign in at the Kaarigar dashboard and change this password from the login page.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "print": "Print slip",
+      "done": "Done, I've given it"
+    },
+    "machines": {
+      "title": "Machines",
+      "summary": "{{count}} machines on the floor · {{missing}} without a printed sticker",
+      "add": "Add machine",
+      "addTitle": "Add a machine",
+      "editTitle": "Edit {{code}}",
+      "search": "Search code, name, line",
+      "noMatch": "No machine matches that search.",
+      "filter": {
+        "active": "On the floor",
+        "archived": "Archived"
+      },
+      "empty": {
+        "active": "No machines yet.",
+        "archived": "No archived machines."
+      },
+      "emptyHint": "Add each machine with its code. Then print its QR sticker so technicians can scan it.",
+      "pickAll": "Select all machines",
+      "pick": "Select {{code}}",
+      "pickMissing": "Select the {{count}} without stickers",
+      "printSelected": "Print {{count}} stickers",
+      "col": {
+        "machine": "Machine",
+        "model": "Model",
+        "repairs": "Expert repairs",
+        "questions": "Questions (30 days)",
+        "lastBreakdown": "Last breakdown",
+        "sticker": "QR sticker"
+      },
+      "noModel": "No model",
+      "notPrinted": "Not printed",
+      "printedOn": "Printed {{date}}",
+      "archivedOn": "Archived {{date}}",
+      "sticker": "Sticker",
+      "newQr": "New QR",
+      "archive": "Archive",
+      "restore": "Restore",
+      "form": {
+        "code": "Machine code",
+        "codeHint": "As painted on the machine.",
+        "name": "Name",
+        "namePlaceholder": "Hydraulic press",
+        "line": "Line or area",
+        "model": "Model",
+        "modelHint": "Manuals are uploaded per model, so all machines of a model share them.",
+        "noModel": "No model yet",
+        "newModel": "Add a new model…",
+        "modelName": "Model name",
+        "modelType": "Type",
+        "modelTypePlaceholder": "hydraulic press",
+        "create": "Add and print sticker"
+      },
+      "confirm": {
+        "archive": {
+          "title": "Archive {{code}}?",
+          "body": "It disappears from technicians' machine lists and its sticker stops opening it. Its repairs and history stay in the knowledge base. You can restore it later.",
+          "cta": "Archive"
+        },
+        "restore": {
+          "title": "Restore {{code}}?",
+          "body": "It comes back on technicians' machine lists and its sticker works again.",
+          "cta": "Restore"
+        },
+        "newqr": {
+          "title": "Make a new QR for {{code}}?",
+          "body": "The old sticker stops working right away. Use this when a sticker is lost or damaged, then print and stick the new one.",
+          "cta": "Make new QR"
+        }
+      }
+    },
+    "stickers": {
+      "title_one": "QR sticker for {{count}} machine",
+      "title_other": "QR stickers for {{count}} machines",
+      "subtitle": "A4, 8 stickers per page. Print on sticker paper or plain paper and laminate.",
+      "back": "Back to machines",
+      "print": "Print",
+      "none": "No machines selected. Go back and tick the machines you want stickers for.",
+      "tip": "Print at 100% scale (not \"fit to page\"). When they're on the machines, mark them as printed.",
+      "markPrinted": "Mark as printed",
+      "marked_one": "Marked {{count}} sticker as printed.",
+      "marked_other": "Marked {{count}} stickers as printed.",
+      "scan": "Scan to ask Kaarigar"
+    },
+    "knowledge": {
+      "title": "Knowledge base",
+      "subtitle": "Everything Kaarigar answers from: expert repairs, manuals and breakdown history.",
+      "stat": {
+        "records": "Expert repairs",
+        "recordsWeek_one": "+{{count}} this week",
+        "recordsWeek_other": "+{{count}} this week",
+        "manual": "Manual sections",
+        "documents_one": "from {{count}} document",
+        "documents_other": "from {{count}} documents",
+        "history": "Breakdown entries",
+        "historyNote": "from your imported logs",
+        "answered": "Questions answered",
+        "answeredNote": "{{answered}} of {{total}} in the last 30 days"
+      },
+      "kindLabel": "Type",
+      "kind": {
+        "all": "All",
+        "E": "Expert repairs",
+        "M": "Manuals",
+        "H": "History"
+      },
+      "machine": "Machine",
+      "search": "Search the knowledge base",
+      "sortLabel": "Sort",
+      "sort": {
+        "recent": "Newest first",
+        "used": "Most used"
+      },
+      "showArchived": "Archived repairs",
+      "by": "by {{name}}",
+      "approvedBy": "approved by {{name}}",
+      "fromQuestion": "from a technician's question",
+      "sections_one": "{{count}} section",
+      "sections_other": "{{count}} sections",
+      "downtime_one": "{{count}} min down",
+      "downtime_other": "{{count}} min down",
+      "usedIn_one": "answer",
+      "usedIn_other": "answers",
+      "notUsed": "Not used yet",
+      "checkPages": "Check pages",
+      "archived": "Archived",
+      "archive": "Archive",
+      "restore": "Restore",
+      "empty": "Nothing here yet.",
+      "emptyHint": "Approve expert repairs in the review queue, or upload a manual in",
+      "emptyArchived": "No archived repairs.",
+      "noMatch": "Nothing matches. Try other words or another machine.",
+      "searchNotUpdated": "Restored, but Kaarigar couldn't update search right now. It will be used in answers after the next reindex.",
+      "confirm": {
+        "archive": {
+          "title": "Archive this repair?",
+          "body_one": "Kaarigar stops using it in answers right away. It was used in {{count}} answer. You can restore it later.",
+          "body_other": "Kaarigar stops using it in answers right away. It was used in {{count}} answers. You can restore it later.",
+          "cta": "Archive"
+        },
+        "restore": {
+          "title": "Restore this repair?",
+          "body_one": "Kaarigar starts using it in answers again.",
+          "body_other": "Kaarigar starts using it in answers again.",
+          "cta": "Restore"
+        }
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "subtitle": "Manuals, SOPs and safety sheets Kaarigar reads to answer questions.",
+      "upload": "Upload a document",
+      "form": {
+        "file": "PDF file",
+        "fileHint": "PDF up to {{mb}} MB.",
+        "tooBig": "This file is bigger than {{mb}} MB. Split it or compress it first.",
+        "title": "Title",
+        "type": "Type",
+        "model": "Machine model",
+        "pickModel": "Pick a model",
+        "noModels": "Add a model in Machines first.",
+        "submit": "Upload and read"
+      },
+      "type": {
+        "manual": "Manual",
+        "sop": "SOP",
+        "safety": "Safety sheet"
+      },
+      "job": {
+        "queued": "Waiting to start…",
+        "running": "Reading the document…",
+        "done": "Done",
+        "failed": "Failed",
+        "doneText": "Done. Kaarigar can now answer from this document.",
+        "failedText": "Kaarigar couldn't read this file."
+      },
+      "another": "Upload another",
+      "duplicate": "This file is already uploaded for this model. Replace the old copy?",
+      "replace": "Replace",
+      "status": {
+        "ready": "Ready",
+        "readyCheck": "Ready · check pages",
+        "reading": "Reading",
+        "failed": "Failed"
+      },
+      "pages_one": "{{count}} page",
+      "pages_other": "{{count}} pages",
+      "sections_one": "{{count}} section",
+      "sections_other": "{{count}} sections",
+      "delete": "Delete",
+      "empty": "No documents yet.",
+      "emptyHint": "Upload the service manual for each machine model. Kaarigar cites the page in its answers.",
+      "confirmDelete": {
+        "title": "Delete this document?",
+        "body": "Kaarigar stops answering from it. Past answers keep their text but the page link stops working.",
+        "cta": "Delete"
+      }
+    },
+    "logs": {
+      "title": "Breakdown logs",
+      "subtitle": "Import your breakdown register so Kaarigar knows what went wrong before and what fixed it.",
+      "importTitle": "Import a breakdown log",
+      "steps": "Import steps",
+      "step": {
+        "upload": "Upload",
+        "map": "Check columns",
+        "result": "Import"
+      },
+      "uploadHelp": "Excel (.xlsx) or CSV, the way your plant already keeps it. Kaarigar finds the header row and suggests which column is which.",
+      "file": "Breakdown log file",
+      "tooBig": "This file is bigger than {{mb}} MB.",
+      "read": "Read file",
+      "duplicate": "This exact file was imported before. Import it again anyway?",
+      "importAgain": "Import again",
+      "found": "Found {{rows}} rows (header on row {{header}}).",
+      "suggestedAi": "Kaarigar suggested the columns below. Check them.",
+      "suggestedRules": "Columns matched by their names. Check them.",
+      "field": {
+        "machine_code": "Machine",
+        "fault": "Problem / fault",
+        "date": "Date",
+        "action": "Action taken",
+        "downtime_min": "Downtime",
+        "technician": "Attended by"
+      },
+      "required": "required",
+      "notInFile": "Not in this file",
+      "example": "e.g. {{value}}",
+      "preview": "First {{count}} of {{total}} rows",
+      "otherColumns": "Other columns are kept with each entry but not used for search.",
+      "pickRequired": "Pick a column for: {{fields}}",
+      "otherFile": "Use another file",
+      "import_one": "Import {{count}} row",
+      "import_other": "Import {{count}} rows",
+      "importing": "Importing…",
+      "failed": "The import failed.",
+      "imported": "rows imported",
+      "skipped": "rows skipped",
+      "whySkipped": "Why rows were skipped",
+      "row": "Row {{n}}:",
+      "unknownMachineHint": "\"Unknown machine\" means the code isn't in Machines. Add the machine, then import the file again.",
+      "another": "Import another file",
+      "history": "Past imports",
+      "noHistory": "Nothing imported yet.",
+      "okSkipped": "{{ok}} in · {{skipped}} skipped",
+      "importStatus": {
+        "mapping": "Not confirmed",
+        "importing": "Importing",
+        "failed": "Failed",
+        "uploaded": "Uploaded"
+      },
+      "entries": "Latest entries",
+      "noEntries": "No breakdown entries yet."
+    },
+    "analytics": {
+      "title": "Analytics",
+      "subtitle": "Is Kaarigar helping the floor, and where is knowledge missing?",
+      "range": "Time range",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "noQuestions": "No questions in this period yet. Numbers appear once technicians start asking.",
+      "none": "Nothing in this period.",
+      "min_one": "{{count}} min",
+      "min_other": "{{count}} min",
+      "hours_one": "{{count}} h",
+      "hours_other": "{{count}} h",
+      "showTable": "Show as table",
+      "showChart": "Show chart",
+      "tile": {
+        "questions": "Questions asked",
+        "questionsNote": "{{voice}}% by voice",
+        "answered": "Answered with sources",
+        "answeredNote": "first words in {{s}} s",
+        "fixed": "Fixed after the answer",
+        "fixedNote": "{{fixed}} of {{total}} who told us",
+        "noFeedback": "No feedback yet",
+        "escalations": "Sent to an expert",
+        "escalationsNote": "{{open}} open now · replied in {{time}}"
+      },
+      "perDay": {
+        "title": "Questions per day",
+        "aria": "Questions per day, answered and not answered. Use left and right arrow keys to read each day.",
+        "questions": "questions",
+        "answered": "Answered",
+        "other": "Not answered",
+        "escalated": "Sent to expert",
+        "day": "Day"
+      },
+      "machines": {
+        "title": "Machines with most questions",
+        "subtitle": "Where technicians need help most.",
+        "aria": "Questions per machine",
+        "tip": "{{code}}: {{count}} questions, {{noAnswer}} not answered"
+      },
+      "gaps": {
+        "title": "What Kaarigar couldn't answer",
+        "open": "Open escalations",
+        "none": "Kaarigar answered everything in this period.",
+        "noAnswer": "No answer",
+        "failed": "Error",
+        "esc": {
+          "open": "With expert",
+          "answered": "Expert replied",
+          "closed": "Closed"
+        }
+      },
+      "notes": {
+        "title": "Expert repair notes",
+        "sent": "Sent for review",
+        "approved": "Approved",
+        "rejected": "Sent back",
+        "pending": "Waiting for review now",
+        "review": "Time to review (median)",
+        "goReview": "Go to review queue"
+      },
+      "team": {
+        "title": "Team",
+        "subtitle": "Who asks, who adds knowledge, and how often their knowledge answered someone else's question.",
+        "person": "Person",
+        "questions": "Questions",
+        "notes": "Notes approved / sent",
+        "replies": "Questions answered",
+        "used": "Answers using their notes"
+      }
+    }
+  },
+  "scan": {
+    "title": "Scan machine QR",
+    "back": "Back",
+    "hint": "Point the camera at the QR sticker on the machine",
+    "starting": "Starting the camera…",
+    "opening": "Opening the machine…",
+    "torchOn": "Turn on the torch",
+    "torchOff": "Turn off the torch",
+    "typeInstead": "Type the machine code instead",
+    "codeLabel": "Machine code (painted on the machine)",
+    "open": "Open",
+    "badCode": "Type a machine code like HP-07.",
+    "codeNotFound": "No machine {{code}} in your plant.",
+    "notKaarigar": "This isn't a Kaarigar machine sticker.",
+    "notInPlant": "This sticker isn't for a machine in your plant, or it was replaced. Ask your supervisor for a new sticker.",
+    "offline": "No connection. Check Wi-Fi or mobile data.",
+    "lookupFailed": "Couldn't open the machine. Try again.",
+    "problem": {
+      "permission": "Kaarigar isn't allowed to use the camera.",
+      "permissionHow": "Tap the lock icon next to the address (or open Android Settings → Apps → Kaarigar → Permissions) and allow Camera, then come back.",
+      "no_camera": "No camera found on this device. Type the machine code below.",
+      "insecure": "The camera only works on the secure (https) address of Kaarigar. Type the machine code below.",
+      "camera_failed": "The camera didn't start. Close other apps using it, or type the machine code below."
     }
   }
 }
