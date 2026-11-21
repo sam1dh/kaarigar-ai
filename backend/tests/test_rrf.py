@@ -55,13 +55,13 @@ def test_same_machine_bonus_can_flip_order() -> None:
 
 def test_max_per_source() -> None:
     """At most MAX_PER_SOURCE chunks of one document survive the merge."""
-    cands = [(f"c{i}", "record:r1", {"v": i + 1}, False) for i in range(5)]
-    cands.append(("x", "record:r2", {"v": 6}, False))
+    cands = [(f"c{i}", "record:r1", {"v": i + 1}, False) for i in range(MAX_PER_SOURCE + 1)]
+    cands.append(("x", "record:r2", {"v": MAX_PER_SOURCE + 2}, False))
     out = merge(cands)
     r1 = [x for x in out if x["source"] == "record:r1"]
     assert len(r1) == MAX_PER_SOURCE
     # the kept ones are the best-scoring of the document's chunks
-    assert {x["id"] for x in r1} == {"c0", "c1"}
+    assert {x["id"] for x in r1} == {f"c{i}" for i in range(MAX_PER_SOURCE)}
 
 
 def test_order_and_dedup() -> None:
@@ -86,3 +86,4 @@ def test_friendly_ranks_pairs() -> None:
     assert _friendly_ranks({}) == {}
     assert _friendly_ranks({"kw": 4}) == {"keyword": 4}
     assert _friendly_ranks({"gl": 2}) == {"graph": 2}
+    assert _friendly_ranks({"tb": 2}) == {"table": 2}

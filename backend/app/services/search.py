@@ -42,7 +42,7 @@ GRAPH_SYMPTOMS = 3
 GRAPH_RECORDS = 10
 GRAPH_LOGS = 5
 CANDIDATES = 20  # hydrated rows when the reranker is on
-MAX_PER_SOURCE = 2
+MAX_PER_SOURCE = 6  # candidate cap per document; with rerank on, enough manual pages must reach it
 PREP_CACHE_TTL = 60  # seconds; glossary/machines change rarely
 # Cosine floor for the vector retriever: nonsense queries top out ~0.59 while the
 # weakest neighbours of real queries measure ~0.66+ (bge-small-en-v1.5). Below the
