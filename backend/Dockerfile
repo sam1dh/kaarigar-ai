@@ -28,7 +28,7 @@ RUN for f in requirements*.txt; do pip install -r "$f"; done
 ARG EMBED_MODEL=BAAI/bge-small-en-v1.5
 ARG RERANK_MODEL=Xenova/ms-marco-MiniLM-L-6-v2
 RUN python -c "from fastembed import TextEmbedding; TextEmbedding('${EMBED_MODEL}', cache_dir='${FASTEMBED_CACHE_PATH}')" \
-    && python -c "from fastembed import TextCrossEncoder; TextCrossEncoder('${RERANK_MODEL}', cache_dir='${FASTEMBED_CACHE_PATH}')" \
+    && python -c "from fastembed.rerank.cross_encoder import TextCrossEncoder; TextCrossEncoder('${RERANK_MODEL}', cache_dir='${FASTEMBED_CACHE_PATH}')" \
     && python -c "import imageio_ffmpeg; print('ffmpeg', imageio_ffmpeg.get_ffmpeg_exe())"
 
 COPY shared/languages.json /app/shared/languages.json
