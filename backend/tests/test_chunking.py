@@ -81,6 +81,16 @@ def test_table_chunked_in_row_groups() -> None:
     assert len(chunks) == 3
 
 
+def test_specification_table_uses_one_row_per_chunk() -> None:
+    header = "|Item|Value|\n|---|---|"
+    rows = "\n".join(f"|Item {i}|Value {i}|" for i in range(4))
+    pages = [_page(1, f"# 2 Specifications\n\n{header}\n{rows}")]
+    chunks = chunking.chunk_manual(pages)
+    spec = [c for c in chunks if "Specifications" in c["section"]]
+    assert len(spec) == 4
+    assert all(c["text"].count("Item:") == 1 for c in spec)
+
+
 # ===== OCR =====
 
 def test_picture_text_becomes_content_and_is_flagged() -> None:

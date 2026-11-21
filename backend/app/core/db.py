@@ -20,7 +20,15 @@ _pool: ConnectionPool | None = None
 
 
 def _dsn() -> str:
+    # Settings load DATABASE_URL from .env, but this module is also imported by
+    # scripts that only export the variable. Accept either source.
     url = os.environ.get("DATABASE_URL", "")
+    if not url:
+        from app.core.config import get_settings
+
+        url = get_settings().database_url
+    if not url:
+        raise RuntimeError("DATABASE_URL is not set (checked environment and .env).")
     # Session pooler URLs sometimes lack sslmode; Supabase requires TLS.
     if "sslmode" not in url:
         url += ("&" if "?" in url else "?") + "sslmode=require"

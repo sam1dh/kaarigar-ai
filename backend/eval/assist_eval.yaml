@@ -1,0 +1,70 @@
+# Assist test set for Phase 3 (real Phase 1 search + Groq, no Sarvam). Run: python -m scripts.eval_assist
+# Needs Phase 1 seeding (knowledge_seed.yaml R01-R26, the 3 manuals, the breakdown log).
+#
+# answerable: true  -> Kaarigar must answer (status answered) AND cite at least one source matching `expect_any`
+#                      (same matcher as search_eval.yaml: record key / manual model+contains / log machine+contains).
+#                      `must_mention` (optional): every string must appear in the answer (local or English copy).
+# answerable: false -> Kaarigar must NOT make up an answer (status no_answer).
+# language: the technician's profile language; the answer must be written in it.
+#
+# Targets: answered >= 0.85, cited correctly >= 0.80, abstained >= 0.80, p50 time to first word <= 3 s.
+
+plant: shree
+cases:
+  # ---- English, one per common breakdown ----
+  - {id: A01, q: "HP-07 pressure is not building up", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R01}, {type: record, key: R09}, {type: manual, model: HPX-200, contains: "pressure not building"}],
+     must_mention: ["210"]}
+  - {id: A02, q: "knocking sound from the pump, thak thak", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R02}, {type: record, key: R11}, {type: manual, model: HPX-200, contains: "cavitation"}]}
+  - {id: A03, q: "ram is moving very slowly while pressing", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R03}, {type: manual, model: HPX-200, contains: "suction strainer"}]}
+  - {id: A04, q: "oil leaking from the cylinder rod", machine: HP-02, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R04}, {type: manual, model: HPX-200, contains: "rod seal"}]}
+  - {id: A05, q: "hydraulic oil is getting very hot", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R05}, {type: record, key: R26}, {type: manual, model: HPX-200, contains: "E-05"}]}
+  - {id: A06, q: "ram slowly comes down by itself when stopped at the top", machine: HP-02, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R06}, {type: record, key: R12}, {type: manual, model: HPX-200, contains: "drifts down"}]}
+  - {id: A07, q: "motor keeps tripping with E-04", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R08}, {type: manual, model: HPX-200, contains: "E-04"}]}
+  - {id: A08, q: "what is the relief valve pressure setting", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: manual, model: HPX-200, contains: "210 bar"}, {type: record, key: R01}], must_mention: ["210"]}
+  - {id: A09, q: "what does error E-07 mean", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: manual, model: HPX-200, contains: "E-07"}]}
+  - {id: A10, q: "spindle not starting, alarm 2001", machine: CNC-03, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R13}, {type: manual, model: CL-40, contains: "2001"}]}
+  - {id: A11, q: "chatter marks on the job surface", machine: CNC-03, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R14}, {type: manual, model: CL-40, contains: "chatter"}]}
+  - {id: A12, q: "lube alarm on the lathe", machine: CNC-03, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R16}, {type: manual, model: CL-40, contains: "1012"}]}
+  - {id: A13, q: "chuck is not gripping the job properly", machine: CNC-03, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R18}, {type: manual, model: CL-40, contains: "3010"}]}
+  - {id: A14, q: "compressor is not building air pressure", machine: AC-01, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R20}, {type: record, key: R21}, {type: manual, model: AC-75, contains: "does not reach"}]}
+  - {id: A15, q: "water is coming in the air line", machine: AC-01, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R23}, {type: manual, model: AC-75, contains: "auto drain"}]}
+  - {id: A16, q: "safety valve keeps blowing", machine: AC-01, language: en-IN, answerable: true,
+     expect_any: [{type: record, key: R24}, {type: manual, model: AC-75, contains: "safety valve"}]}
+  - {id: A17, q: "what is the cut-out pressure of the compressor", machine: AC-01, language: en-IN, answerable: true,
+     expect_any: [{type: manual, model: AC-75, contains: "8.0 bar"}, {type: record, key: R24}], must_mention: ["8"]}
+  - {id: A18, q: "has HP-07 had oil leak breakdowns before", machine: HP-07, language: en-IN, answerable: true,
+     expect_any: [{type: log, machine: HP-07, contains: "leak"}, {type: record, key: R04}]}
+
+  # ---- Typed in Indian languages / Hinglish: answer must come back in that language ----
+  - {id: A19, q: "HP-07 में प्रेशर नहीं बन रहा", machine: HP-07, language: hi-IN, answerable: true,
+     expect_any: [{type: record, key: R01}, {type: record, key: R09}, {type: manual, model: HPX-200, contains: "pressure not building"}]}
+  - {id: A20, q: "pump se thak thak awaaz aa rahi hai", machine: HP-07, language: hi-IN, answerable: true,
+     expect_any: [{type: record, key: R02}, {type: record, key: R11}, {type: manual, model: HPX-200, contains: "cavitation"}]}
+  - {id: A21, q: "कंप्रेसर गरम होकर बंद हो जाता है", machine: AC-01, language: hi-IN, answerable: true,
+     expect_any: [{type: record, key: R22}, {type: manual, model: AC-75, contains: "discharge temperature"}]}
+  - {id: A22, q: "சக் வேலையை சரியாக பிடிக்கவில்லை", machine: CNC-03, language: ta-IN, answerable: true,
+     expect_any: [{type: record, key: R18}, {type: manual, model: CL-40, contains: "3010"}]}
+  - {id: A23, q: "HP-07 वर तेल खूप गरम होते", machine: HP-07, language: mr-IN, answerable: true,
+     expect_any: [{type: record, key: R05}, {type: record, key: R26}, {type: manual, model: HPX-200, contains: "E-05"}]}
+
+  # ---- Not in the plant's knowledge: Kaarigar must say it doesn't know ----
+  - {id: U01, q: "how do I change the tyre of the forklift", machine: null, language: en-IN, answerable: false}
+  - {id: U02, q: "what is today's canteen menu", machine: null, language: en-IN, answerable: false}
+  - {id: U03, q: "how to repair a cracked mobile phone screen", machine: null, language: en-IN, answerable: false}
+  - {id: U04, q: "HP-07 ka spindle bearing kaise badle", machine: HP-07, language: hi-IN, answerable: false}
+  - {id: U05, q: "what is the dealer phone number and warranty period for AC-01", machine: AC-01, language: en-IN, answerable: false}

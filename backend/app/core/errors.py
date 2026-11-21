@@ -1,16 +1,24 @@
 """Standard error shape: {"error": {"code": "...", "message": "..."}}."""
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
-class ApiError(Exception):
+class ApiError(HTTPException):
+    """API error carrying a stable code.
+
+    Subclasses HTTPException so routers mounted in a bare FastAPI app (tests,
+    isolated packs) still return a useful body ({"detail": {"error": ...}})
+    instead of raising. The app installs a handler that emits the flat
+    {"error": {...}} envelope used by the frontend.
+    """
+
     def __init__(self, status: int, code: str, message: str):
         self.status = status
         self.code = code
         self.message = message
-        super().__init__(message)
+        super().__init__(status_code=status, detail={"error": {"code": code, "message": message}})
 
 
 def error_body(code: str, message: str) -> dict:

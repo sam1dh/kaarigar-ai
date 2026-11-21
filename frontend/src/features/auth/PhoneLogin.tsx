@@ -46,6 +46,16 @@ export default function PhoneLogin() {
   const [pin, setPin] = useState<string[]>(Array(PIN_LENGTH).fill(""));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set by lib/api.ts when a deactivated account is signed out mid-session.
+  const [notice] = useState<string | null>(() => {
+    try {
+      const m = sessionStorage.getItem("kaarigar.authNotice");
+      sessionStorage.removeItem("kaarigar.authNotice");
+      return m;
+    } catch {
+      return null;
+    }
+  });
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const pinValue = useMemo(() => pin.join(""), [pin]);
@@ -160,6 +170,11 @@ export default function PhoneLogin() {
         {t("login.heading")}
       </h1>
       <p className="mt-3 text-[0.9375rem] text-ink-muted">{t("login.subline")}</p>
+      {notice && (
+        <p className="mt-4 rounded-xl bg-alert/10 px-4 py-3 text-sm font-medium text-alert">
+          {notice}
+        </p>
+      )}
 
       {/* Language pills: English · हिन्दी · <last chosen if different> · 🌐 More */}
       <div className="mt-8">

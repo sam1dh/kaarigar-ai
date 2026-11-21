@@ -11,7 +11,21 @@ import NoteScreen from "@/features/capture/NoteScreen";
 import SentScreen from "@/features/capture/SentScreen";
 import ManagerLayout from "@/features/manager/ManagerLayout";
 import ReviewQueue from "@/features/manager/review/ReviewQueue";
-import Placeholder from "@/features/manager/Placeholder";
+import EscalationsPage from "@/features/manager/escalations/EscalationsPage";
+import KnowledgePage from "@/features/manager/knowledge/KnowledgePage";
+import AnalyticsPage from "@/features/manager/analytics/AnalyticsPage";
+import MachinesPage from "@/features/manager/setup/MachinesPage";
+import StickerSheet from "@/features/manager/setup/StickerSheet";
+import DocumentsPage from "@/features/manager/setup/DocumentsPage";
+import BreakdownLogsPage from "@/features/manager/setup/BreakdownLogsPage";
+import PeoplePage from "@/features/manager/setup/PeoplePage";
+import ScanScreen from "@/features/scan/ScanScreen";
+import AskScreen from "@/features/assist/AskScreen";
+import MyQuestions from "@/features/assist/MyQuestions";
+import QuestionScreen from "@/features/assist/QuestionScreen";
+import ExpertInbox from "@/features/assist/ExpertInbox";
+import EscalationAnswerScreen from "@/features/assist/EscalationAnswerScreen";
+import QrRedirect from "@/features/assist/QrRedirect";
 
 /** Full-screen splash while the initial session check runs. */
 function Splash() {
@@ -49,6 +63,16 @@ function RequireRole({
   if (!roles.includes(profile.role)) {
     return <Navigate to={homeForRole(profile.role)} replace />;
   }
+  return <>{children}</>;
+}
+
+/** Guard: plant-admin-only manager routes (Meena, a non-admin supervisor, goes back to /manager). */
+function RequireAdmin({ children }: { children: ReactNode }) {
+  const profile = useSessionStore((s) => s.profile);
+  const loading = useSessionStore((s) => s.loading);
+
+  if (loading) return <Splash />;
+  if (!profile?.is_admin) return <Navigate to="/manager" replace />;
   return <>{children}</>;
 }
 
@@ -137,6 +161,70 @@ export default function Router() {
           }
         />
         <Route
+          path="/tech/machines/:code/ask"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <AskScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/ask"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <AskScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/scan"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <ScanScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/questions"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <MyQuestions />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/questions/:id"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <QuestionScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/inbox"
+          element={
+            <RequireRole roles={["expert", "supervisor"]} loginTo="/login">
+              <ExpertInbox />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tech/inbox/:id"
+          element={
+            <RequireRole roles={["expert", "supervisor"]} loginTo="/login">
+              <EscalationAnswerScreen />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/m/:token"
+          element={
+            <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
+              <QrRedirect />
+            </RequireRole>
+          }
+        />
+        <Route
           path="/tech/records/:id"
           element={
             <RequireRole roles={["technician", "expert", "supervisor"]} loginTo="/login">
@@ -163,34 +251,48 @@ export default function Router() {
           }
         >
           <Route index element={<ReviewQueue />} />
-          <Route
-            path="escalations"
-            element={<Placeholder phase="4" title="Escalations" />}
-          />
-          <Route
-            path="knowledge"
-            element={<Placeholder phase="2" title="Knowledge base" />}
-          />
-          <Route
-            path="analytics"
-            element={<Placeholder phase="5" title="Analytics" />}
-          />
-          <Route path="team" element={<Placeholder phase="6" title="Team" />} />
+          <Route path="escalations" element={<EscalationsPage />} />
+          <Route path="knowledge" element={<KnowledgePage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
           <Route
             path="setup/machines"
-            element={<Placeholder phase="2" title="Setup › Machines" />}
+            element={
+              <RequireAdmin>
+                <MachinesPage />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="setup/machines/stickers"
+            element={
+              <RequireAdmin>
+                <StickerSheet />
+              </RequireAdmin>
+            }
           />
           <Route
             path="setup/documents"
-            element={<Placeholder phase="1" title="Setup › Documents" />}
+            element={
+              <RequireAdmin>
+                <DocumentsPage />
+              </RequireAdmin>
+            }
           />
           <Route
             path="setup/logs"
-            element={<Placeholder phase="1" title="Setup › Breakdown logs" />}
+            element={
+              <RequireAdmin>
+                <BreakdownLogsPage />
+              </RequireAdmin>
+            }
           />
           <Route
             path="setup/people"
-            element={<Placeholder phase="6" title="Setup › People" />}
+            element={
+              <RequireAdmin>
+                <PeoplePage />
+              </RequireAdmin>
+            }
           />
         </Route>
 

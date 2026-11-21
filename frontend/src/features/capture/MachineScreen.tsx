@@ -1,6 +1,6 @@
 /**
- * 02 Machine (/tech/machines/:code) — minimal version for Phase 2.
- * "Ask a question" arrives in Phase 3. "Record a repair" is shown to experts and supervisors only.
+ * 02 Machine (/tech/machines/:code).
+ * Anyone can ask a question; "Record a repair" is shown to experts and supervisors only.
  */
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -27,11 +27,11 @@ export default function MachineScreen() {
       </Card>
 
       <div className="space-y-3">
-        <BigButton kind="secondary" disabled title={t('capture.machine.askSoon')}>
-          {t('capture.machine.ask')} <span className="ml-1 text-xs font-normal">({t('capture.machine.askSoon')})</span>
+        <BigButton onClick={() => nav(`/tech/machines/${encodeURIComponent(code)}/ask`)}>
+          {t('assist.machine.ask')}
         </BigButton>
         {canRecord && (
-          <BigButton onClick={() => nav(`/tech/machines/${encodeURIComponent(code)}/record`)}>
+          <BigButton kind="secondary" onClick={() => nav(`/tech/machines/${encodeURIComponent(code)}/record`)}>
             {t('capture.machine.record')}
           </BigButton>
         )}

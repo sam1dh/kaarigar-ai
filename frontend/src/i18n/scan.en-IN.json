@@ -1,0 +1,27 @@
+{
+  "scan": {
+    "title": "Scan machine QR",
+    "back": "Back",
+    "hint": "Point the camera at the QR sticker on the machine",
+    "starting": "Starting the camera…",
+    "opening": "Opening the machine…",
+    "torchOn": "Turn on the torch",
+    "torchOff": "Turn off the torch",
+    "typeInstead": "Type the machine code instead",
+    "codeLabel": "Machine code (painted on the machine)",
+    "open": "Open",
+    "badCode": "Type a machine code like HP-07.",
+    "codeNotFound": "No machine {{code}} in your plant.",
+    "notKaarigar": "This isn't a Kaarigar machine sticker.",
+    "notInPlant": "This sticker isn't for a machine in your plant, or it was replaced. Ask your supervisor for a new sticker.",
+    "offline": "No connection. Check Wi-Fi or mobile data.",
+    "lookupFailed": "Couldn't open the machine. Try again.",
+    "problem": {
+      "permission": "Kaarigar isn't allowed to use the camera.",
+      "permissionHow": "Tap the lock icon next to the address (or open Android Settings → Apps → Kaarigar → Permissions) and allow Camera, then come back.",
+      "no_camera": "No camera found on this device. Type the machine code below.",
+      "insecure": "The camera only works on the secure (https) address of Kaarigar. Type the machine code below.",
+      "camera_failed": "The camera didn't start. Close other apps using it, or type the machine code below."
+    }
+  }
+}

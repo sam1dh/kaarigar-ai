@@ -35,11 +35,14 @@ GRAPH_LOG_MIN_SIM = 0.35
 SAME_MACHINE_BONUS = 0.004
 VECTOR_TOP = 30
 KEYWORD_TOP = 30
+TABLE_TOP = 8       # manual tables (specs, intervals, error codes) are read as prose otherwise
+TABLE_FLOOR = 0.55  # cosine floor for the table retriever (spec rows are short)
+TABLE_WEIGHT = 0.25  # a boost, not a full retriever vote: must not push out a better record
 GRAPH_SYMPTOMS = 3
 GRAPH_RECORDS = 10
 GRAPH_LOGS = 5
 CANDIDATES = 20  # hydrated rows when the reranker is on
-MAX_PER_SOURCE = 2
+MAX_PER_SOURCE = 6  # candidate cap per document; with rerank on, enough manual pages must reach it
 PREP_CACHE_TTL = 60  # seconds; glossary/machines change rarely
 # Cosine floor for the vector retriever: nonsense queries top out ~0.59 while the
 # weakest neighbours of real queries measure ~0.66+ (bge-small-en-v1.5). Below the
@@ -155,16 +158,34 @@ glogs as (
     limit %(nlogs)s
   ) c
 ),
+tbl as (
+  -- Table rows are 'Header: value | Header: value'. A spec/interval/code row often
+  -- answers a question better than a paragraph that merely shares its words.
+  select c.id, row_number() over () as r
+  from (
+    select c.id
+    from chunks c
+    where c.tenant_id = %(tenant)s
+      and (%(model)s::uuid is null or c.model_id = %(model)s)
+      and c.embedding is not null
+      and c.text like '%% | %%'
+      and coalesce(c.section, '') not ilike '%%contents%%'   -- TOC lines look like table rows
+      and 1 - (c.embedding <=> %(qvec)s) >= %(tblfloor)s
+    order by c.embedding <=> %(qvec)s
+    limit %(ntbl)s
+  ) c
+),
 allc as (
   select id, 'v' ret, r from vec
   union all select id, 'kc', r from kcodes
   union all select id, 'kw', r from kwords
   union all select id, 'gr', r from grec
   union all select id, 'gl', r from glogs
+  union all select id, 'tb', r from tbl
 ),
 scored as (
   select a.id,
-         sum(1.0::float8 / (%(rrfk)s + a.r)) as base,
+         sum((case when a.ret = 'tb' then %(tblw)s else 1.0 end)::float8 / (%(rrfk)s + a.r)) as base,
          jsonb_object_agg(a.ret, a.r) as ranks
   from allc a
   group by a.id
@@ -206,7 +227,7 @@ C_MODEL, C_DOC_TITLE, C_MCODE, C_AUTHOR, C_REC_DATE, C_LOG_DATE, C_SYMPTOMS = 10
 
 
 def _friendly_ranks(rank_map: dict) -> dict[str, int]:
-    """{'v': 1, 'kc': 2, 'kw': 5, 'gr': 3} → {'vector': 1, 'keyword': 2, 'graph': 3}."""
+    """{'v': 1, 'kc': 2, 'kw': 5, 'gr': 3, 'tb': 2} → {'vector': 1, 'keyword': 2, 'graph': 3, 'table': 2}."""
     out: dict[str, int] = {}
     if rank_map.get("v"):
         out["vector"] = int(rank_map["v"])
@@ -216,6 +237,8 @@ def _friendly_ranks(rank_map: dict) -> dict[str, int]:
     gr = [int(rank_map[t]) for t in ("gr", "gl") if rank_map.get(t)]
     if gr:
         out["graph"] = min(gr)
+    if rank_map.get("tb"):
+        out["table"] = int(rank_map["tb"])
     return out
 
 
@@ -299,6 +322,9 @@ def search(
         "nrec": GRAPH_RECORDS,
         "nlogs": GRAPH_LOGS,
         "maxsrc": MAX_PER_SOURCE,
+        "ntbl": TABLE_TOP,
+        "tblfloor": TABLE_FLOOR,
+        "tblw": TABLE_WEIGHT,
         "kfinal": CANDIDATES if use_rerank else k,
         "vecfloor": VEC_FLOOR,
     }
@@ -372,7 +398,7 @@ def search(
         "results": results,
     }
     if debug:
-        ret_lists: dict[str, list] = {"vector": [], "keyword": [], "graph": []}
+        ret_lists: dict[str, list] = {"vector": [], "keyword": [], "graph": [], "table": []}
         for c in candidates:
             rm = c.get("ranks") or {}
             base = {
@@ -380,7 +406,7 @@ def search(
                 "source_type": c["source_type"],
                 "seed_key": (c.get("meta") or {}).get("seed_key"),
             }
-            for dst in ("vector", "keyword", "graph"):
+            for dst in ("vector", "keyword", "graph", "table"):
                 if rm.get(dst):
                     ret_lists[dst].append({**base, "rank": int(rm[dst])})
         for dst in ret_lists:
@@ -389,6 +415,7 @@ def search(
             "vector": ret_lists["vector"],
             "keyword": ret_lists["keyword"],
             "graph": ret_lists["graph"],
+            "table": ret_lists["table"],
             "symptoms_matched": [
                 {"name": s["name"], "sim": round(float(s["sim"]), 3)} for s in symptoms
             ],

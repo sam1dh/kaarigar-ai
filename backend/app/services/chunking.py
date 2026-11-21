@@ -16,6 +16,7 @@ WORDS_MAX = 320         # ...never more than 320
 WORDS_OVERLAP = 40      # 40-word overlap between consecutive paragraph chunks
 MIN_WORDS = 15          # pieces under 15 words merge into the next chunk
 TABLE_ROWS_PER_CHUNK = 5
+SPEC_ROWS_PER_CHUNK = 1  # spec values (pressure, amps, intervals) need an exact one-row match
 
 _BR = re.compile(r"<br\s*/?>", re.IGNORECASE)
 _BOLD = re.compile(r"\*\*")
@@ -228,12 +229,18 @@ def _parse_table(table_text: str) -> tuple[list[str], list[list[str]]]:
 
 
 def _table_chunks(table_text: str, section: str, page: int) -> list[tuple[str, int]]:
-    """4. One chunk per group of up to 5 data rows; rows become 'Header: value' lines."""
+    """4. One chunk per group of data rows; rows become 'Header: value' lines.
+
+    Specification tables get one row per chunk: grouping five unrelated values
+    dilutes the embedding and buries the exact row a technician asked for.
+    """
     headers, data = _parse_table(table_text)
+    low = section.lower()
+    rows_per_chunk = SPEC_ROWS_PER_CHUNK if ("spec" in low or "technical data" in low) else TABLE_ROWS_PER_CHUNK
     out = []
-    for start in range(0, len(data), TABLE_ROWS_PER_CHUNK):
+    for start in range(0, len(data), rows_per_chunk):
         lines = []
-        for row in data[start : start + TABLE_ROWS_PER_CHUNK]:
+        for row in data[start : start + rows_per_chunk]:
             parts = []
             for i, cell in enumerate(row):
                 h = headers[i] if i < len(headers) else f"Col {i + 1}"

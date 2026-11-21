@@ -26,6 +26,8 @@ dependencies = [
     "langgraph>=1.0,<2",
     "langgraph-checkpoint-postgres>=3.0,<4",
     "imageio-ffmpeg>=0.5",
+    # Phase 4: manager app
+    "segno>=1.6",
 ]
 
 [dependency-groups]

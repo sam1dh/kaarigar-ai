@@ -83,7 +83,8 @@ class PostgresRepo:
         return self._one(
             """select m.id, m.code, m.name, m.line, m.model_id, mm.model, mm.type
                from machines m left join machine_models mm on mm.id = m.model_id
-               where m.tenant_id = %(t)s and upper(m.code) = upper(%(c)s)""",
+               where m.tenant_id = %(t)s and m.archived_at is null
+                 and upper(m.code) = upper(%(c)s)""",
             {"t": tenant_id, "c": code.strip()},
         )
 

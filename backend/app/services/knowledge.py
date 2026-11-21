@@ -48,21 +48,21 @@ def rebuild_record_chunks(record_id: str) -> None:
     with db() as conn:
         row = conn.execute(
             """select r.tenant_id, r.machine_id, r.symptom_id, r.cause_id, r.fix_id,
-                      r.safety_note, r.fields, r.status, r.transcript_en
+                      r.safety_note, r.fields, r.status, r.transcript_en, r.archived_at
                from repair_records r where r.id = %s""",
             (record_id,),
         ).fetchone()
     if not row:
         return
     (tenant_id, machine_id, symptom_id, cause_id, fix_id,
-     safety_note, fields, status, transcript_en) = row
+     safety_note, fields, status, transcript_en, archived_at) = row
 
     with db() as conn:
         conn.execute(
             "delete from chunks where source_type = 'record' and source_id = %s",
             (record_id,),
         )
-    if status != "approved":
+    if status != "approved" or archived_at is not None:
         return
 
     with db() as conn:
