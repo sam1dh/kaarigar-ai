@@ -24,6 +24,11 @@ declare -A SECRET_NAMES=(
   [DATABASE_URL]=database-url
   [GROQ_API_KEY]=groq-key
   [SARVAM_API_KEY]=sarvam-key
+  [MISTRAL_API_KEY]=mistral-key
+  [GEMINI_API_KEY]=gemini-key
+  [OPENROUTER_API_KEY]=openrouter-key
+  [AZURE_SPEECH_KEY]=azure-speech-key
+  [DEEPGRAM_API_KEY]=deepgram-key
   [SUPABASE_JWT_SECRET]=sb-jwt-secret
 )
 

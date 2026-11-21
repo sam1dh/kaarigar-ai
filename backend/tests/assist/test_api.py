@@ -235,11 +235,14 @@ def test_read_aloud_only_for_answers():
         e.svc.shutdown()
 
 
-def test_read_aloud_service_down(env):
+def test_read_aloud_service_down_uses_browser(env):
+    """Part D: when every server voice fails the app is told to use the phone's speechSynthesis."""
     qid, _ = ask_ok(env)
     env.spies["tts"].fail = True
     r = env.as_("tech").post(f"/assist/queries/{qid}/tts")
-    assert r.status_code == 503 and code(r) == "tts_failed"
+    assert r.status_code == 200
+    body = r.json()
+    assert body["tts"] == "browser" and body["lang"]
 
 
 # ============================================================================ sources

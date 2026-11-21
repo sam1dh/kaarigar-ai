@@ -161,24 +161,39 @@ def make_postgres_checkpointer(database_url: str):
 def init_capture() -> CaptureRunner:
     """Call once on app startup (lifespan). Builds the real dependencies."""
     global _runner, _checkpoint_pool
+    from app.core.answer_cache import AnswerCache
+    from app.core.breaker import CircuitBreaker
+    from app.core.llm_chain import ChainStructured
+    from app.core.openai_compat import OpenAICompatClient
+    from app.core.provider_config import llm_candidates, stt_candidates
+    from app.core.stt_chain import STTChain
+
     from . import adapters
-    from .llm import GroqLLM
+    from .errors import USER_MESSAGES as CAPTURE_MESSAGES
     from .repo import PostgresRepo
-    from .sarvam import SarvamClient
     from .settings import get_capture_settings
 
     s = get_capture_settings()
     repo = PostgresRepo(adapters.db_conn)
+    llm_breaker = CircuitBreaker(s.PROVIDER_BREAKER_FAILURES, s.PROVIDER_BREAKER_COOLDOWN_SEC)
+    stt_breaker = CircuitBreaker(s.PROVIDER_BREAKER_FAILURES, s.PROVIDER_BREAKER_COOLDOWN_SEC)
+    llm_http = OpenAICompatClient(timeout=s.LLM_TIMEOUT_SEC)
+    llm = llm_candidates(s)
+    cache = AnswerCache(adapters.db_conn)
     deps = CaptureDeps(
         repo=repo,
         settings=s,
-        stt_factory=lambda: SarvamClient(s.SARVAM_API_KEY, model=s.SARVAM_STT_MODEL, mode=s.SARVAM_STT_MODE,
-                                         timeout=s.SARVAM_TIMEOUT_SEC),
-        llm_factory=lambda: GroqLLM(s.GROQ_API_KEY, timeout=s.GROQ_TIMEOUT_SEC),
+        stt_factory=lambda: STTChain(stt_candidates(s), breaker=stt_breaker, timeout=s.SARVAM_TIMEOUT_SEC,
+                                     error_factory=lambda: CaptureError("stt_failed",
+                                                                        CAPTURE_MESSAGES["stt_failed"])),
+        llm_factory=lambda: ChainStructured(llm, breaker=llm_breaker, client=llm_http, timeout=s.LLM_TIMEOUT_SEC,
+                                            error_factory=lambda: CaptureError(
+                                                "llm_failed", CAPTURE_MESSAGES["llm_failed"])),
         download_audio=lambda path: adapters.storage_download("audio", path),
         delete_audio=lambda path: adapters.storage_delete("audio", path),
         manual_excerpts=adapters.manual_excerpts,
         rebuild_chunks=adapters.rebuild_record_chunks,
+        invalidate_answer_cache=cache.invalidate_tenant,
     )
     saver, _checkpoint_pool = make_postgres_checkpointer(s.DATABASE_URL)
     n = repo.mark_stuck_failed("server_restarted")

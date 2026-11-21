@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchSpeech, type QueryStatus } from './assistApi';
 import { speakLine } from './parseAnswer';
-import { canSpeak, findVoice, sharedAudio, voicesReady } from './speech';
+import { canSpeak, findVoice, sharedAudio, speakBrowser, voicesReady } from './speech';
 
 interface Opts {
   enabled: boolean;
@@ -99,10 +99,16 @@ export function useSpokenAnswer({ enabled, lang, text, phase, status, queryId, w
       if (phase === 'done' && status === 'answered' && queryId && !serverStarted.current) {
         serverStarted.current = true;
         try {
-          const blob = await fetchSpeech(queryId);
+          const speech = await fetchSpeech(queryId);
           if (stopped.current) return;
+          if (!(speech instanceof Blob)) {
+            // Both server voices failed: the browser speaks with its own engine.
+            const body = text.replace(/\[[EMH]\d+\]/g, '').replace(/\s+/g, ' ').trim();
+            setSpeaking(speakBrowser(body, speech.lang || lang, () => setSpeaking(false)));
+            return;
+          }
           if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-          urlRef.current = URL.createObjectURL(blob);
+          urlRef.current = URL.createObjectURL(speech);
           const a = sharedAudio();
           a.src = urlRef.current;
           a.onended = () => setSpeaking(false);

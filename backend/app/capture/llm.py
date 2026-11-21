@@ -13,6 +13,8 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from app.core.llm_diagnostics import describe, estimate_tokens
+
 from .errors import USER_MESSAGES, CaptureError
 
 log = logging.getLogger("kaarigar.capture.llm")
@@ -34,6 +36,7 @@ class GroqLLM:
                    out: type[T], max_tokens: int = 1500, reasoning_effort: str = "low") -> T:
         import groq  # imported here so tests can run with a fake client
 
+        prompt_tokens = estimate_tokens(system, user)
         attempts = [True, False]  # strict, then best-effort
         waited = False
         i = 0
@@ -53,7 +56,8 @@ class GroqLLM:
                 return out.model_validate_json(content)
             except groq.RateLimitError as e:
                 if waited:
-                    log.warning("groq rate limited twice model=%s", model)
+                    log.warning("groq rate limited twice model=%s %s prompt_tokens~%d",
+                                model, describe(e), prompt_tokens)
                     raise CaptureError("llm_failed", USER_MESSAGES["llm_failed"]) from e
                 waited = True
                 retry_after = 5.0
@@ -61,20 +65,26 @@ class GroqLLM:
                     retry_after = float(e.response.headers.get("retry-after", 5))
                 except Exception:  # noqa: BLE001
                     pass
+                log.info("groq rate limited model=%s %s prompt_tokens~%d, waiting %.0fs",
+                         model, describe(e), prompt_tokens, min(retry_after, 20))
                 time.sleep(min(retry_after, 20))
                 continue  # same attempt again
-            except groq.BadRequestError:
-                log.info("groq 400 with strict=%s model=%s, trying next mode", strict, model)
+            except groq.BadRequestError as e:
+                log.info("groq 400 with strict=%s model=%s %s prompt_tokens~%d, trying next mode",
+                         strict, model, describe(e), prompt_tokens)
             except (groq.AuthenticationError, groq.PermissionDeniedError, groq.NotFoundError) as e:
                 # A wrong/revoked key or a removed model is a configuration problem, not a
                 # transcript problem. Surface it as the friendly "AI helper is busy" error
                 # (ROB-03) instead of letting it bubble up as a generic `internal` failure.
-                log.warning("groq rejected request model=%s: %s", model, type(e).__name__)
+                log.warning("groq rejected request model=%s %s prompt_tokens~%d",
+                            model, describe(e), prompt_tokens)
                 raise CaptureError("llm_failed", USER_MESSAGES["llm_failed"]) from e
-            except ValidationError:
-                log.info("groq reply failed validation strict=%s model=%s", strict, model)
+            except ValidationError as e:
+                log.info("groq reply failed validation strict=%s model=%s %s prompt_tokens~%d",
+                         strict, model, describe(e), prompt_tokens)
             except (groq.APIConnectionError, groq.APITimeoutError, groq.InternalServerError) as e:
-                log.warning("groq unavailable model=%s: %s", model, type(e).__name__)
+                log.warning("groq unavailable model=%s %s prompt_tokens~%d",
+                            model, describe(e), prompt_tokens)
                 raise CaptureError("llm_failed", USER_MESSAGES["llm_failed"]) from e
             i += 1
         raise CaptureError("llm_failed", USER_MESSAGES["llm_failed"])

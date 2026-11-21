@@ -98,6 +98,32 @@ def check_env() -> None:
     except ImportError:
         report("FAIL", "segno installed (QR stickers)", "pip install -r requirements-phase4.txt")
 
+    check_provider_env()
+
+
+def check_provider_env() -> None:
+    """Show the fallback order without printing any key."""
+    try:
+        from app.assist.settings import AssistSettings
+        from app.core.provider_config import llm_candidates, stt_candidates, tts_candidates
+        s = AssistSettings()
+        llm, stt, tts = llm_candidates(s), stt_candidates(s), tts_candidates(s)
+        report("PASS" if len(llm) >= 2 else "WARN", "LLM fallback chain",
+               " -> ".join(f"{p.name}:{p.model}" for p in llm) or "none (answers will fail)")
+        report("PASS" if len(stt) >= 2 else "WARN", "STT fallback chain",
+               " -> ".join(p.name for p in stt) or "none (voice questions will fail)")
+        report("PASS" if tts else "WARN", "TTS chain",
+               " -> ".join(p.name for p in tts) or "none (phone will use browser TTS)")
+        disabled = (s.DISABLE_PROVIDERS or "").strip()
+        if disabled:
+            report("WARN", "DISABLE_PROVIDERS is set", f"{disabled} will be skipped (fallback drill?)")
+        placeholders = [k for k, v in os.environ.items()
+                        if k.endswith(("_API_KEY", "_SPEECH_KEY")) and str(v).upper().startswith("PASTE_")]
+        report("WARN" if placeholders else "PASS", "No PASTE_ placeholder keys",
+               ", ".join(placeholders))
+    except Exception as e:  # noqa: BLE001
+        report("WARN", "Provider configuration", f"couldn't read: {type(e).__name__}")
+
 
 SQL_CHECKS = [
     ("Phase 0-1 tables", "select count(*) from information_schema.tables where table_schema='public' and table_name = any(%s)",
@@ -105,6 +131,7 @@ SQL_CHECKS = [
        "repair_records", "queries", "feedback", "escalations"],), 12),
     ("Migration 0004 (Phase 3)", "select count(*) from information_schema.columns where table_name='queries' and column_name in ('status','answer_local','first_token_ms')", (), 3),
     ("Migration 0005 (Phase 4)", "select count(*) from information_schema.columns where (table_name, column_name) in (('users','deactivated_at'),('machines','archived_at'),('repair_records','archived_at'))", (), 3),
+    ("Migration 0006 (Phase 6 answer cache)", "select count(*) from information_schema.tables where table_name='answer_cache'", (), 1),
     ("admin_audit table", "select count(*) from information_schema.tables where table_name='admin_audit'", (), 1),
 ]
 
@@ -147,21 +174,71 @@ def check_db() -> None:
 
 
 def check_online() -> None:
+    """Cheap live checks: 5-token LLM pings + free key/endpoint checks. Never prints a key."""
     import httpx
 
+    from app.assist.settings import AssistSettings
+    from app.core.provider_config import llm_candidates, stt_candidates, tts_candidates
+
     env = os.environ
-    for name, req in [
-        ("Supabase Auth admin reachable", lambda c: c.get(f"{env['SUPABASE_URL'].rstrip('/')}/auth/v1/admin/users?per_page=1",
-                                                       headers={"apikey": env["SUPABASE_SERVICE_ROLE_KEY"], "Authorization": f"Bearer {env['SUPABASE_SERVICE_ROLE_KEY']}"})),
-        ("Groq key works", lambda c: c.get("https://api.groq.com/openai/v1/models", headers={"Authorization": f"Bearer {env['GROQ_API_KEY']}"})),
-    ]:
+    s = AssistSettings()
+
+    try:
+        with httpx.Client(timeout=10) as c:
+            r = c.get(f"{env['SUPABASE_URL'].rstrip('/')}/auth/v1/admin/users?per_page=1",
+                      headers={"apikey": env["SUPABASE_SERVICE_ROLE_KEY"],
+                               "Authorization": f"Bearer {env['SUPABASE_SERVICE_ROLE_KEY']}"})
+        report("PASS" if r.status_code == 200 else "FAIL", "Supabase Auth admin reachable", f"HTTP {r.status_code}")
+    except Exception as e:  # noqa: BLE001
+        report("FAIL", "Supabase Auth admin reachable", type(e).__name__)
+
+    # --- every configured LLM provider gets the same tiny request (5 output tokens) ---
+    for p in llm_candidates(s):
+        name = f"{p.name} · {p.model}"
         try:
-            with httpx.Client(timeout=10) as c:
-                r = req(c)
-            report("PASS" if r.status_code == 200 else "FAIL", name, f"HTTP {r.status_code}")
+            with httpx.Client(timeout=20) as c:
+                r = c.post(
+                    p.base_url.rstrip("/") + "/chat/completions",
+                    headers={"Authorization": f"Bearer {p.api_key}", "Content-Type": "application/json"},
+                    json={"model": p.model, "messages": [{"role": "user", "content": "Reply with OK."}],
+                          "max_tokens": 5, "temperature": 0},
+                )
+            if r.status_code == 200:
+                report("PASS", f"LLM {name}", "HTTP 200 (5-token ping)")
+            elif r.status_code == 429:
+                report("WARN", f"LLM {name}", "HTTP 429 rate limited, key works")
+            else:
+                report("FAIL", f"LLM {name}", f"HTTP {r.status_code}")
         except Exception as e:  # noqa: BLE001
-            report("FAIL", name, type(e).__name__)
-    report("WARN", "Sarvam key", "not pinged (every call costs); ask one voice question on staging instead")
+            report("FAIL", f"LLM {name}", type(e).__name__)
+
+    # --- STT/TTS keys: use free endpoints where they exist ---
+    stt = {p.name for p in stt_candidates(s)}
+    tts = {p.name for p in tts_candidates(s)}
+
+    azure_key = getattr(s, "AZURE_SPEECH_KEY", "")
+    azure_region = getattr(s, "AZURE_SPEECH_REGION", "")
+    if azure_key and azure_region and "azure" in (stt | tts):
+        try:
+            with httpx.Client(timeout=15) as c:
+                r = c.post(f"https://{azure_region}.api.cognitive.microsoft.com/sts/v1.0/issueToken",
+                           headers={"Ocp-Apim-Subscription-Key": azure_key})
+            report("PASS" if r.status_code == 200 else "FAIL", "Azure Speech key", f"HTTP {r.status_code}")
+        except Exception as e:  # noqa: BLE001
+            report("FAIL", "Azure Speech key", type(e).__name__)
+
+    deepgram_key = getattr(s, "DEEPGRAM_API_KEY", "")
+    if deepgram_key and "deepgram" in stt:
+        try:
+            with httpx.Client(timeout=15) as c:
+                r = c.get("https://api.deepgram.com/v1/projects",
+                          headers={"Authorization": f"Token {deepgram_key}"})
+            report("PASS" if r.status_code == 200 else "FAIL", "Deepgram key", f"HTTP {r.status_code}")
+        except Exception as e:  # noqa: BLE001
+            report("FAIL", "Deepgram key", type(e).__name__)
+
+    if "sarvam" in (stt | tts):
+        report("WARN", "Sarvam key", "not pinged (every call costs); ask one voice question on staging instead")
 
 
 def main() -> int:

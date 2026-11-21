@@ -163,29 +163,52 @@ _service: AssistService | None = None
 def init_assist() -> AssistService:
     global _service
     from app.capture.audio import prepare
-    from app.capture.llm import GroqLLM
-    from app.capture.sarvam import SarvamClient
+    from app.capture.errors import CaptureError
+    from app.capture.errors import USER_MESSAGES as CAPTURE_MESSAGES
+    from app.core.answer_cache import AnswerCache
+    from app.core.breaker import CircuitBreaker
+    from app.core.llm_chain import ChainStructured, LLMChainWriter
+    from app.core.openai_compat import OpenAICompatClient
+    from app.core.provider_config import llm_candidates, stt_candidates, tts_candidates
+    from app.core.stt_chain import STTChain
+    from app.core.tts_chain import TTSChain
 
     from . import adapters
     from .audio_clean import clean_audio
-    from .llm import GroqWriter
+    from .errors import AssistError
     from .repo import PostgresAssistRepo
     from .settings import get_assist_settings
-    from .tts import SarvamTTS
 
     s = get_assist_settings()
     repo = PostgresAssistRepo(adapters.db_conn)
+
+    llm_breaker = CircuitBreaker(s.PROVIDER_BREAKER_FAILURES, s.PROVIDER_BREAKER_COOLDOWN_SEC)
+    stt_breaker = CircuitBreaker(s.PROVIDER_BREAKER_FAILURES, s.PROVIDER_BREAKER_COOLDOWN_SEC)
+    tts_breaker = CircuitBreaker(s.PROVIDER_BREAKER_FAILURES, s.PROVIDER_BREAKER_COOLDOWN_SEC)
+    llm_http = OpenAICompatClient(timeout=s.LLM_TIMEOUT_SEC)
+    llm = llm_candidates(s)
+
+    def writer_factory() -> LLMChainWriter:
+        return LLMChainWriter(llm, breaker=llm_breaker, client=llm_http, timeout=s.LLM_TIMEOUT_SEC,
+                               error_factory=lambda: AssistError("llm_failed"))
+
+    def structured_factory() -> ChainStructured:
+        return ChainStructured(llm, breaker=llm_breaker, client=llm_http, timeout=s.LLM_TIMEOUT_SEC,
+                               error_factory=lambda: CaptureError("llm_failed", CAPTURE_MESSAGES["llm_failed"]))
+
+    cache = AnswerCache(adapters.db_conn, ttl_days=s.ANSWER_CACHE_TTL_DAYS) if s.ANSWER_CACHE else None
     deps = AssistDeps(
         repo=repo,
         settings=s,
         search=adapters.hybrid_search,
-        stt_factory=lambda: SarvamClient(s.SARVAM_API_KEY, model=s.SARVAM_STT_MODEL, mode=s.ASSIST_STT_MODE,
-                                         timeout=s.SARVAM_TIMEOUT_SEC),
-        writer_factory=lambda: GroqWriter(s.GROQ_API_KEY, timeout=s.GROQ_TIMEOUT_SEC),
-        structured_factory=lambda: GroqLLM(s.GROQ_API_KEY, timeout=s.GROQ_TIMEOUT_SEC),
+        stt_factory=lambda: STTChain(stt_candidates(s), breaker=stt_breaker, timeout=s.SARVAM_TIMEOUT_SEC,
+                                     error_factory=lambda: CaptureError("stt_failed", CAPTURE_MESSAGES["stt_failed"])),
+        writer_factory=writer_factory,
+        structured_factory=structured_factory,
         prepare_audio=prepare,
         clean_audio=clean_audio,
         machine_codes=_ttl_cache(repo.machine_codes, 300),
+        cache=cache,
     )
     storage = Storage(upload=adapters.storage_upload, download=adapters.storage_download,
                       signed_url=adapters.storage_signed_url)
@@ -194,10 +217,16 @@ def init_assist() -> AssistService:
         log.info("marked %s interrupted question(s) as failed", n)
     _service = AssistService(
         deps, storage=storage,
-        tts_factory=lambda: SarvamTTS(s.SARVAM_API_KEY, model=s.SARVAM_TTS_MODEL, speaker=s.SARVAM_TTS_SPEAKER,
-                                      max_chars=s.TTS_MAX_CHARS),
+        tts_factory=lambda: TTSChain(tts_candidates(s), breaker=tts_breaker, timeout=s.SARVAM_TIMEOUT_SEC,
+                                     max_chars=s.TTS_MAX_CHARS,
+                                     error_factory=lambda: AssistError("tts_failed")),
         start_reply=adapters.start_reply_capture,
     )
+    log.info("assist providers: llm=%s stt=%s tts=%s cache=%s",
+             ",".join(p.name for p in llm) or "none",
+             ",".join(p.name for p in stt_candidates(s)) or "none",
+             ",".join(p.name for p in tts_candidates(s)) or "none",
+             "on" if cache else "off")
     return _service
 
 

@@ -232,9 +232,14 @@ export const sendFeedback = (id: string, outcome: Outcome) => json<QueryView>(`/
 export const escalateQuery = (id: string, note?: string) =>
   json<{ escalation_id: string; assigned_to: Person | null }>(`/assist/queries/${id}/escalate`, 'POST', { note: note || null });
 
-export async function fetchSpeech(id: string): Promise<Blob> {
+export type SpeechResult = Blob | { tts: 'browser'; lang: string };
+
+/** Server voice (WAV blob), or {tts:"browser"} when both Sarvam and Azure are unavailable. */
+export async function fetchSpeech(id: string): Promise<SpeechResult> {
   const res = await fetch(`${apiBase()}/assist/queries/${id}/tts`, { method: 'POST', headers: await authHeaders() });
   if (!res.ok) throw await errorFrom(res, 'tts_failed');
+  const type = res.headers.get('content-type') || '';
+  if (type.includes('application/json')) return await res.json() as { tts: 'browser'; lang: string };
   return res.blob();
 }
 

@@ -221,3 +221,87 @@ def test_english_copy_is_cleaned_when_no_line_is_lost():
     p.run(req, Events())
     row = spies["repo"].queries[req.query_id]
     assert row["answer"].splitlines()[2] == "2. Set the relief valve to 210 bar. [E1][M1]"   # bad ref removed
+
+
+# ============================================================================ Phase 6: cache + token saving
+
+from app.assist import answer_format as af
+from app.assist.settings import AssistSettings
+from app.core.answer_cache import chunk_key, machine_key, question_key
+
+from .fakes import GOOD_ANSWER, FakeSearch, search_results
+
+
+class FakeCache:
+    def __init__(self):
+        self.rows = {}
+        self.gets = []
+        self.puts = []
+
+    def get(self, tenant, machine, q_key, c_key):
+        self.gets.append((tenant, machine, q_key, c_key))
+        return self.rows.get((tenant, machine, q_key, c_key))
+
+    def put(self, **kw):
+        self.puts.append(kw)
+
+
+def _keys(question="pressure is not building on HP-07", machine=HP07):
+    sources = af.build_sources(search_results(machine["code"]), 4)
+    return machine_key(machine), question_key(question), chunk_key(sources), sources
+
+
+def test_answer_cache_hit_skips_the_writer():
+    cache = FakeCache()
+    m_key, q_key, c_key, sources = _keys()
+    cache.rows[(TENANT, m_key, q_key, c_key)] = {
+        "answer_local": GOOD_ANSWER, "sources": af.public_sources(sources),
+        "citations": [{"ref": "E1"}], "confidence": 0.91,
+        "model": "groq:openai/gpt-oss-120b", "provider": "groq",
+    }
+    p, req, spies = setup(text="HP-07 में pressure नहीं बन रहा", cache=cache)
+    ev = Events()
+    assert p.run(req, ev) == "answered"
+    assert spies["writer"].stream_calls == []                 # no LLM call
+    assert ev.text() == GOOD_ANSWER
+    done = ev.of("done")[0]
+    assert done["provider"] == "groq" and done["status"] == "answered"
+    assert spies["repo"].queries[req.query_id]["model"] == "groq:openai/gpt-oss-120b"
+
+
+def test_grounded_answer_is_written_to_cache():
+    cache = FakeCache()
+    p, req, spies = setup(text="HP-07 में pressure नहीं बन रहा", cache=cache)
+    ev = Events()
+    assert p.run(req, ev) == "answered"
+    assert len(cache.puts) == 1
+    row = cache.puts[0]
+    assert row["tenant_id"] == TENANT and row["answer_local"].startswith("SAFETY:")
+    assert [c["ref"] for c in row["citations"]] == ["E1", "M1"]
+    assert row["provider"] == "openai/gpt-oss-120b" or row["provider"] is None
+
+
+def test_uncited_answer_is_not_cached():
+    cache = FakeCache()
+    p, req, spies = setup(text="HP-07 में pressure नहीं बन रहा", cache=cache,
+                          writer=FakeWriter(answer="1. Tighten the bolt."))
+    ev = Events()
+    assert p.run(req, ev) == "no_answer"
+    assert cache.puts == []
+
+
+def test_low_score_chunks_are_dropped_before_the_prompt():
+    rs = search_results(HP07["code"])
+    rs[0]["score"], rs[1]["score"], rs[2]["score"] = 1.0, 0.10, 0.05
+    p, req, spies = setup(text="HP-07 में pressure नहीं बन रहा", search=FakeSearch(results=rs))
+    ev = Events()
+    p.run(req, ev)
+    assert [s["ref"] for s in ev.of("sources")[0]["sources"]] == ["E1"]
+
+
+def test_token_saving_defaults():
+    s = AssistSettings(_env_file=None)
+    assert s.ANSWER_MAX_TOKENS == 700
+    assert s.CONTEXT_K == 4
+    assert s.SOURCE_CHARS == 700
+    assert s.MIN_SCORE_RATIO == 0.35

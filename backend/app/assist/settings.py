@@ -9,9 +9,21 @@ class AssistSettings(BaseSettings):
 
     APP_ENV: str = "development"
 
-    # Keys (same as Phase 2)
+    # Keys (same as Phase 2) + Phase 6 fallbacks
     SARVAM_API_KEY: str = ""
     GROQ_API_KEY: str = ""
+    MISTRAL_API_KEY: str = ""
+    MISTRAL_MODEL: str = "mistral-small-latest"
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    OPENROUTER_API_KEY: str = ""              # only used when set
+    OPENROUTER_MODEL: str = "openai/gpt-oss-120b"
+    AZURE_SPEECH_KEY: str = ""
+    AZURE_SPEECH_REGION: str = ""
+    DEEPGRAM_API_KEY: str = ""                # only used when set
+    DEEPGRAM_STT_MODEL: str = "nova-3"
+    GROQ_STT_MODEL: str = "whisper-large-v3"
+    DISABLE_PROVIDERS: str = ""               # e.g. "groq" for a fallback drill
 
     # Speech-to-text for questions: keep the technician's own words for "You asked"
     SARVAM_STT_MODEL: str = "saaras:v3"
@@ -27,7 +39,10 @@ class AssistSettings(BaseSettings):
     GROQ_MODEL_ANSWER: str = "openai/gpt-oss-120b"   # writes the answer (streamed)
     GROQ_MODEL_SMALL: str = "openai/gpt-oss-20b"     # question -> English, answer -> English, fallback writer
     GROQ_TIMEOUT_SEC: float = 45.0
-    ANSWER_MAX_TOKENS: int = 900
+    LLM_TIMEOUT_SEC: float = 8.0              # per provider, before the next one is tried
+    PROVIDER_BREAKER_FAILURES: int = 3
+    PROVIDER_BREAKER_COOLDOWN_SEC: float = 60.0
+    ANSWER_MAX_TOKENS: int = 700              # token saving: shorter, still complete answers
 
     # Questions
     MAX_QUESTION_SEC: int = 60
@@ -41,9 +56,14 @@ class AssistSettings(BaseSettings):
 
     # Search + answer
     SEARCH_K: int = 8                 # results asked from Phase 1 search
-    CONTEXT_K: int = 6                # sources given to the writer
-    SOURCE_CHARS: int = 900           # characters per source in the prompt
+    CONTEXT_K: int = 4                # sources given to the writer (token saving)
+    SOURCE_CHARS: int = 700           # characters per source in the prompt
+    MIN_SCORE_RATIO: float = 0.35     # drop chunks scoring below this fraction of the best result
     ESCALATE_BELOW: float = 0.5       # confidence below this -> the app suggests asking an expert
+
+    # Answer cache (Postgres). Only grounded answers are stored.
+    ANSWER_CACHE: bool = True
+    ANSWER_CACHE_TTL_DAYS: int = 7
 
     # Capacity (Groq free tier is small)
     ASSIST_WORKERS: int = 4           # questions answered at the same time; more wait in a queue

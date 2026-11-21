@@ -47,6 +47,23 @@ export function findVoice(lang: string): SpeechSynthesisVoice | null {
     ?? null;
 }
 
+/**
+ * Final TTS fallback: the phone speaks with its own engine, even when it has no
+ * named voice for the language (the browser then picks its default voice).
+ */
+export function speakBrowser(text: string, lang: string, onEnd?: () => void): boolean {
+  if (!canSpeak() || !text.trim()) return false;
+  const u = new SpeechSynthesisUtterance(text);
+  const voice = findVoice(lang);
+  if (voice) u.voice = voice;
+  u.lang = voice?.lang || lang;
+  u.rate = 0.95;
+  if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+  return true;
+}
+
 /** Voices load late on some phones: resolves when the list is ready (or after 1 s). */
 export function voicesReady(): Promise<void> {
   if (!canSpeak() || window.speechSynthesis.getVoices().length) return Promise.resolve();

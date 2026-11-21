@@ -548,7 +548,8 @@ class ReplyStarter:
         self.repo.link_reply_record(kw["tenant_id"], kw["record_id"], kw["escalation_id"])
 
 
-def make_deps(*, repo=None, search=None, writer=None, structured=None, stt=None, cleaner=None, **settings_over):
+def make_deps(*, repo=None, search=None, writer=None, structured=None, stt=None, cleaner=None, cache=None,
+              **settings_over):
     repo = repo or FakeAssistRepo()
     search = search or FakeSearch()
     writer = writer or FakeWriter()
@@ -564,9 +565,9 @@ def make_deps(*, repo=None, search=None, writer=None, structured=None, stt=None,
     settings = AssistSettings(_env_file=None, SARVAM_API_KEY="x", GROQ_API_KEY="x", **settings_over)
     deps = AssistDeps(repo=repo, settings=settings, search=search, stt_factory=lambda: stt,
                       writer_factory=lambda: writer, structured_factory=lambda: structured,
-                      prepare_audio=prepare, clean_audio=cleaner, machine_codes=repo.machine_codes)
+                      prepare_audio=prepare, clean_audio=cleaner, machine_codes=repo.machine_codes, cache=cache)
     return deps, {"repo": repo, "search": search, "writer": writer, "structured": structured, "stt": stt,
-                  "cleaner": cleaner, "prepared": prepared}
+                  "cleaner": cleaner, "prepared": prepared, "cache": cache}
 
 
 def make_service(**kw):

@@ -11,6 +11,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Iterator
 
+from app.core.llm_diagnostics import describe, estimate_tokens
+
 from pydantic import BaseModel
 
 from .errors import AssistError
@@ -40,6 +42,7 @@ class GroqWriter:
 
         retry_before_text = (groq.RateLimitError, groq.APIConnectionError, groq.APITimeoutError,
                              groq.InternalServerError)
+        prompt_tokens = estimate_tokens(system, user)
         last: Exception | None = None
         for model in [m for m in models if m]:
             try:
@@ -52,11 +55,13 @@ class GroqWriter:
                     reasoning_effort="low",
                 )
             except retry_before_text as e:
-                log.info("groq %s unavailable before streaming (%s), trying next model", model, type(e).__name__)
+                log.info("groq model=%s unavailable before streaming %s prompt_tokens~%d, trying next model",
+                         model, describe(e), prompt_tokens)
                 last = e
                 continue
             except groq.APIError as e:   # 400/401/403/404: retrying another model won't help
-                log.warning("groq %s refused the request: %s", model, type(e).__name__)
+                log.warning("groq model=%s refused the request %s prompt_tokens~%d",
+                            model, describe(e), prompt_tokens)
                 raise AssistError("llm_failed") from e
 
             self.model_used = model
@@ -73,8 +78,11 @@ class GroqWriter:
                 return
             except Exception as e:  # noqa: BLE001  stream broke
                 if started:
-                    log.warning("groq stream broke after text started: %s", type(e).__name__)
+                    log.warning("groq stream broke after text started model=%s %s prompt_tokens~%d",
+                                model, describe(e), prompt_tokens)
                     raise AssistError("llm_failed") from e
+                log.info("groq stream broke before text model=%s %s prompt_tokens~%d",
+                         model, describe(e), prompt_tokens)
                 last = e
                 continue
             finally:
@@ -87,6 +95,7 @@ class GroqWriter:
         raise AssistError("llm_failed") from last
 
     def text(self, *, model: str, system: str, user: str, max_tokens: int = 900) -> str | None:
+        prompt_tokens = estimate_tokens(system, user)
         try:
             resp = self.client.chat.completions.create(
                 model=model,
@@ -97,7 +106,8 @@ class GroqWriter:
             )
             return (resp.choices[0].message.content or "").strip() or None
         except Exception as e:  # noqa: BLE001
-            log.info("groq text call failed: %s", type(e).__name__)
+            log.info("groq text call failed model=%s %s prompt_tokens~%d",
+                     model, describe(e), prompt_tokens)
             return None
 
 
@@ -110,5 +120,6 @@ def question_to_english(structured_llm: Any, model: str, text: str) -> str | Non
         q = " ".join(out.question_en.split())
         return q or None
     except Exception as e:  # noqa: BLE001  (CaptureError from Phase 2's GroqLLM, or anything else)
-        log.info("question translation failed: %s", type(e).__name__)
+        log.info("question translation failed model=%s %s prompt_tokens~%d",
+                 model, describe(e), estimate_tokens(QUESTION_EN_SYSTEM, text))
         return None

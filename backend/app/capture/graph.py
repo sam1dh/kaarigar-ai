@@ -58,6 +58,7 @@ class CaptureDeps:
     delete_audio: Callable[[str], None]                  # audio_path -> None
     manual_excerpts: Callable[[str, str, str | None, int], list[dict]]
     rebuild_chunks: Callable[[str], None]
+    invalidate_answer_cache: Callable[[str], Any] | None = None   # tenant_id -> delete cached answers
     now: Callable[[], datetime] = field(default=lambda: datetime.now(timezone.utc))
 
 
@@ -100,6 +101,14 @@ def build_graph(deps: CaptureDeps, checkpointer: Any):
 
     def _upd(state: CaptureState, **cols: Any) -> None:
         deps.repo.update(state["tenant_id"], state["record_id"], **cols)
+
+    def _invalidate_cache(d: CaptureDeps, tenant_id: str) -> None:
+        if not d.invalidate_answer_cache:
+            return
+        try:
+            d.invalidate_answer_cache(tenant_id)
+        except Exception as e:  # noqa: BLE001  knowledge is already saved; stale cache expires in 7 days
+            log.info("answer cache invalidation skipped: %s", type(e).__name__)
 
     # ------------------------------------------------------------------ nodes
     def transcribe(state: CaptureState) -> dict:
@@ -244,10 +253,12 @@ def build_graph(deps: CaptureDeps, checkpointer: Any):
                  reviewed_by=d.get("reviewer_id"), reviewed_at=deps.now(), reject_reason=None,
                  edited_by_reviewer=bool(edits), **ids)
             deps.rebuild_chunks(rid)
+            _invalidate_cache(deps, t)
             return {"outcome": "approved"}
         _upd(state, status="rejected", reject_reason=(d.get("reason") or "")[:500],
              reviewed_by=d.get("reviewer_id"), reviewed_at=deps.now())
         deps.rebuild_chunks(rid)   # makes sure no chunk exists for a rejected record
+        _invalidate_cache(deps, t)
         return {"outcome": "rejected"}
 
     # ------------------------------------------------------------------ wiring

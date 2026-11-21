@@ -23,7 +23,25 @@ class CaptureSettings(BaseSettings):
     GROQ_API_KEY: str = ""
     GROQ_MODEL_SMALL: str = "openai/gpt-oss-20b"    # extraction, translation
     GROQ_MODEL_LARGE: str = "openai/gpt-oss-120b"   # AI check
+    GROQ_MODEL_ANSWER: str = "openai/gpt-oss-120b"  # shared Phase 6 chain order
     GROQ_TIMEOUT_SEC: float = 45.0
+    LLM_TIMEOUT_SEC: float = 8.0                     # per provider in the fallback chain
+    PROVIDER_BREAKER_FAILURES: int = 3
+    PROVIDER_BREAKER_COOLDOWN_SEC: float = 60.0
+
+    # Phase 6 provider fallbacks (keys live in deploy/.env.production; never VITE_*)
+    MISTRAL_API_KEY: str = ""
+    MISTRAL_MODEL: str = "mistral-small-latest"
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_MODEL: str = "openai/gpt-oss-120b"
+    AZURE_SPEECH_KEY: str = ""
+    AZURE_SPEECH_REGION: str = ""
+    DEEPGRAM_API_KEY: str = ""
+    DEEPGRAM_STT_MODEL: str = "nova-3"
+    GROQ_STT_MODEL: str = "whisper-large-v3"
+    DISABLE_PROVIDERS: str = ""
 
     # Recording limits
     MAX_RECORDING_SEC: int = 180

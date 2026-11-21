@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Spinner } from '../capture/ui';
 import { fetchSpeech, type AnswerParts } from './assistApi';
 import { speakableText } from './parseAnswer';
-import { findVoice, sharedAudio } from './speech';
+import { findVoice, sharedAudio, speakBrowser } from './speech';
 
 export default function ReadAloud({ queryId, parts, lang }: { queryId: string; parts: AnswerParts; lang: string }) {
   const { t } = useTranslation();
@@ -33,9 +33,10 @@ export default function ReadAloud({ queryId, parts, lang }: { queryId: string; p
   };
 
   const play = async () => {
+    const body = speakableText(parts, { safety: t('assist.answer.safety'), check: t('assist.answer.check') });
     const voice = findVoice(lang);
     if (voice) {
-      const u = new SpeechSynthesisUtterance(speakableText(parts, { safety: t('assist.answer.safety'), check: t('assist.answer.check') }));
+      const u = new SpeechSynthesisUtterance(body);
       u.voice = voice;
       u.lang = voice.lang;
       u.rate = 0.95;
@@ -48,7 +49,17 @@ export default function ReadAloud({ queryId, parts, lang }: { queryId: string; p
     }
     try {
       setState('loading');
-      if (!urlRef.current) urlRef.current = URL.createObjectURL(await fetchSpeech(queryId));
+      const speech = await fetchSpeech(queryId);
+      if (!(speech instanceof Blob)) {
+        // No server voice: the API asked us to speak with the browser's own engine.
+        if (!speakBrowser(body, speech.lang || lang, () => setState('idle'))) {
+          setState('error');
+          return;
+        }
+        setState('playing');
+        return;
+      }
+      if (!urlRef.current) urlRef.current = URL.createObjectURL(speech);
       const a = audioRef.current ?? sharedAudio();
       audioRef.current = a;
       a.src = urlRef.current;

@@ -24,6 +24,7 @@ from typing import Any, Callable
 
 from app.capture.errors import CaptureError
 from app.capture.languages import is_english
+from app.core.answer_cache import chunk_key, machine_key, question_key
 
 from . import answer_format as af
 from . import prompts
@@ -47,6 +48,7 @@ class AssistDeps:
     prepare_audio: Callable[..., Any]                          # app.capture.audio.prepare
     clean_audio: Callable[..., Any] | None = None              # audio_clean.clean_audio (None = skip)
     machine_codes: Callable[[str], list[str]] = field(default=lambda tenant_id: [])
+    cache: Any = None                                          # app.core.answer_cache.AnswerCache
     clock: Callable[[], float] = field(default=time.monotonic)
 
 
@@ -91,18 +93,38 @@ class AssistPipeline:
                 emit("stage", {"stage": "searching"})
                 found = self.d.search(req.tenant_id, question_en, req.machine["code"] if req.machine else None,
                                       self.s.SEARCH_K)
-            sources = af.build_sources(found.get("results") or [], self.s.CONTEXT_K)
+            results = self._drop_low_scores(found.get("results") or [])
+            sources = af.build_sources(results, self.s.CONTEXT_K)
             emit("sources", {"sources": af.public_sources(sources)})
             if cancelled():
                 return self._cancel(req)
 
+            m_key = machine_key(req.machine)
+            q_key = question_key(question_en)
+            c_key = chunk_key(sources)
+            cached = None
+            if sources and self.s.ANSWER_CACHE and self.d.cache is not None:
+                try:
+                    cached = self.d.cache.get(req.tenant_id, m_key, q_key, c_key)
+                except Exception as e:  # noqa: BLE001  cache is an optimisation, never a blocker
+                    log.info("answer cache read skipped: %s", type(e).__name__)
+
             if not sources:
                 parsed = af.ParsedAnswer(no_answer=True)
-                text_out, first_ms, model = af.NO_ANSWER, None, None
+                first_ms, model, provider = None, None, None
+            elif cached:
+                emit("stage", {"stage": "writing"})
+                parsed = af.parse_answer(cached.get("answer_local") or "", {s["ref"] for s in sources})
+                if not parsed.no_answer and not parsed.refs_used:
+                    parsed = af.ParsedAnswer(no_answer=True)
+                text_out = af.render_answer(parsed)
+                emit("delta", {"text": text_out})
+                first_ms, model, provider = 0, cached.get("model"), cached.get("provider")
+                log.info("answer cache hit tenant=%s machine=%s", req.tenant_id, m_key)
             else:
                 emit("stage", {"stage": "writing"})
-                text_out, first_ms, model, was_cancelled = self._write(req, question_en, original, sources, emit,
-                                                                       cancelled, t0, u.already_tried)
+                text_out, first_ms, model, provider, was_cancelled = self._write(
+                    req, question_en, original, sources, emit, cancelled, t0, u.already_tried)
                 if was_cancelled:
                     return self._cancel(req)
                 parsed = af.parse_answer(text_out, {s["ref"] for s in sources})
@@ -114,18 +136,28 @@ class AssistPipeline:
             status = "no_answer" if parsed.no_answer else "answered"
             latency = int((self.d.clock() - t0) * 1000)
             used = [s for s in sources if s["ref"] in parsed.refs_used]
+            citations = [{"ref": s["ref"], "source_type": s["source_type"], "source_id": s["source_id"],
+                          "seed_key": s.get("seed_key")} for s in used]
+            answer_local = af.render_answer(parsed)
             repo.update_query(
-                req.tenant_id, req.query_id, status=status, answer_local=af.render_answer(parsed),
+                req.tenant_id, req.query_id, status=status, answer_local=answer_local,
                 answer_parts={**parsed.as_dict(), "understanding": understood}, sources=af.public_sources(sources),
-                citations=[{"ref": s["ref"], "source_type": s["source_type"], "source_id": s["source_id"],
-                            "seed_key": s.get("seed_key")} for s in used],
-                confidence=conf, latency_ms=latency, first_token_ms=first_ms, model=model, error=None,
+                citations=citations, confidence=conf, latency_ms=latency, first_token_ms=first_ms, model=model,
+                error=None,
             )
             emit("done", {
                 "query_id": req.query_id, "status": status, "parts": parsed.as_dict(), "confidence": conf,
                 "suggest_escalate": status == "no_answer" or conf < self.s.ESCALATE_BELOW,
                 "latency_ms": latency, "off_topic": not u.is_repair_question, "understanding": understood,
+                "provider": provider,                    # hidden debug: which provider wrote this answer
             })
+            if status == "answered" and citations and not cached and self.s.ANSWER_CACHE and self.d.cache is not None:
+                try:
+                    self.d.cache.put(tenant_id=req.tenant_id, machine=m_key, q_key=q_key, c_key=c_key,
+                                     answer_local=answer_local, sources=af.public_sources(sources),
+                                     citations=citations, confidence=conf, model=model, provider=provider)
+                except Exception as e:  # noqa: BLE001
+                    log.info("answer cache write skipped: %s", type(e).__name__)
             if status == "answered":
                 self._english_copy(req, parsed)
             return status
@@ -178,24 +210,47 @@ class AssistPipeline:
             u.question_en = f"{u.question_en} ({', '.join(missing)})"
         return u
 
+    def _drop_low_scores(self, results: list[dict]) -> list[dict]:
+        """Drop chunks much weaker than the best match: they add prompt tokens without helping."""
+        if not results:
+            return results
+        scores = [float(r.get("score") or 0.0) for r in results]
+        top = max(scores)
+        if top <= 0:
+            return results
+        floor = top * self.s.MIN_SCORE_RATIO
+        kept = [r for r, sc in zip(results, scores) if sc >= floor]
+        return kept or results[:1]
+
     def _write(self, req: AskRequest, question_en: str, original: str, sources: list[dict], emit: Emit,
                cancelled: Callable[[], bool], t0: float,
-               already_tried: str | None = None) -> tuple[str, int | None, str | None, bool]:
+               already_tried: str | None = None) -> tuple[str, int | None, str | None, str | None, bool]:
         writer = self.d.writer_factory()
         gate = af.NoAnswerGate()
         parts: list[str] = []
         first_ms: int | None = None
+        kwargs: dict[str, Any] = {}
+        if getattr(writer, "accepts_validation", False):
+            valid = {s["ref"] for s in sources}
+
+            def validate(text: str) -> bool:
+                return af.is_no_answer(text) or bool(af.parse_answer(text, valid).refs_used)
+
+            kwargs["validate"] = validate
+            kwargs["flush_when"] = lambda buf: bool(af.REF_RE.search(buf))
         stream = writer.stream(
             models=[self.s.GROQ_MODEL_ANSWER, self.s.GROQ_MODEL_SMALL],
             system=prompts.answer_system(req.language),
             user=prompts.answer_user(req.machine, question_en, original, sources, self.s.SOURCE_CHARS,
                                      already_tried=already_tried, language=req.language),
             max_tokens=self.s.ANSWER_MAX_TOKENS,
+            **kwargs,
         )
         try:
             for chunk in stream:
                 if cancelled():
-                    return "".join(parts), first_ms, getattr(writer, "model_used", None), True
+                    return ("".join(parts), first_ms, getattr(writer, "model_used", None),
+                            getattr(writer, "provider_used", None), True)
                 parts.append(chunk)
                 out = gate.feed(chunk)
                 if out:
@@ -211,7 +266,8 @@ class AssistPipeline:
             if first_ms is None:
                 first_ms = int((self.d.clock() - t0) * 1000)
             emit("delta", {"text": tail})
-        return "".join(parts), first_ms, getattr(writer, "model_used", None), False
+        return ("".join(parts), first_ms, getattr(writer, "model_used", None),
+                getattr(writer, "provider_used", None), False)
 
     def _english_copy(self, req: AskRequest, parsed: af.ParsedAnswer) -> None:
         """Managers and escalations read English. Runs after `done`, so the technician never waits for it."""

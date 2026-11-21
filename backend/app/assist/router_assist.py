@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.capture.audio import extension_for
@@ -238,9 +238,13 @@ def read_aloud(query_id: str, user: AssistUser = Depends(assist_user), svc: Assi
     text = af.speakable(parsed)
     if not text:
         raise api_error(409, "not_answered", "There's no answer to read.")
+    language = row.get("language") or user.language
     try:
-        wav = svc.tts_factory().synthesize(text, row.get("language") or user.language)
+        wav = svc.tts_factory().synthesize(text, language)
     except AssistError as e:
+        if e.code == "tts_failed":
+            # Part D: no server voice worked, so the phone speaks it with its own speechSynthesis.
+            return JSONResponse({"tts": "browser", "lang": language})
         raise api_error(503, e.code, e.user_message)
     try:
         svc.storage.upload("tts", path, wav, "audio/wav")
